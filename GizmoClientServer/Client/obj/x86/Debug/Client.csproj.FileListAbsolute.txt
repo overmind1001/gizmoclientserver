@@ -1,0 +1,7 @@
+D:\Универ\4 курс\Клиент-сервер\Коллективная прога\GizmoClientServer\Client\bin\Debug\Client.exe
+D:\Универ\4 курс\Клиент-сервер\Коллективная прога\GizmoClientServer\Client\bin\Debug\Client.pdb
+D:\Универ\4 курс\Клиент-сервер\Коллективная прога\GizmoClientServer\Client\obj\x86\Debug\ResolveAssemblyReference.cache
+D:\Универ\4 курс\Клиент-сервер\Коллективная прога\GizmoClientServer\Client\obj\x86\Debug\Client.Form1.resources
+D:\Универ\4 курс\Клиент-сервер\Коллективная прога\GizmoClientServer\Client\obj\x86\Debug\Client.Properties.Resources.resources
+D:\Универ\4 курс\Клиент-сервер\Коллективная прога\GizmoClientServer\Client\obj\x86\Debug\Client.exe
+D:\Универ\4 курс\Клиент-сервер\Коллективная прога\GizmoClientServer\Client\obj\x86\Debug\Client.pdb
