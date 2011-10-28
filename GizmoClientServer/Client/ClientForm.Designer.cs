@@ -49,6 +49,7 @@
             this.menuStripMainMenu = new System.Windows.Forms.MenuStrip();
             this.главнаяToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.выходToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ПодключитьсяtoolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tabControl1.SuspendLayout();
             this.tabPageChat.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -279,6 +280,7 @@
             // главнаяToolStripMenuItem
             // 
             this.главнаяToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ПодключитьсяtoolStripMenuItem,
             this.выходToolStripMenuItem});
             this.главнаяToolStripMenuItem.Name = "главнаяToolStripMenuItem";
             this.главнаяToolStripMenuItem.Size = new System.Drawing.Size(63, 20);
@@ -287,8 +289,15 @@
             // выходToolStripMenuItem
             // 
             this.выходToolStripMenuItem.Name = "выходToolStripMenuItem";
-            this.выходToolStripMenuItem.Size = new System.Drawing.Size(108, 22);
+            this.выходToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             this.выходToolStripMenuItem.Text = "Выход";
+            // 
+            // ПодключитьсяtoolStripMenuItem
+            // 
+            this.ПодключитьсяtoolStripMenuItem.Name = "ПодключитьсяtoolStripMenuItem";
+            this.ПодключитьсяtoolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.ПодключитьсяtoolStripMenuItem.Text = "Подключиться...";
+            this.ПодключитьсяtoolStripMenuItem.Click += new System.EventHandler(this.ПодключитьсяtoolStripMenuItem_Click);
             // 
             // ClientForm
             // 
@@ -344,6 +353,7 @@
         private System.Windows.Forms.Button btnDownload;
         private System.Windows.Forms.Button btnUpload;
         private System.Windows.Forms.ListBox lbFilesList;
+        private System.Windows.Forms.ToolStripMenuItem ПодключитьсяtoolStripMenuItem;
 
     }
 }
