@@ -30,6 +30,11 @@ namespace Client
             {
                 return;
             }
+            if (tbName.Text.Trim() == String.Empty)
+            {
+                MessageBox.Show("Имя не должно быть пустым!");
+                return;
+            }
             try
             {
                 tcpClient=new TcpClient(tbIp.Text,Convert.ToInt32( numericUpDownPort.Value));
@@ -43,9 +48,13 @@ namespace Client
                 if (who == "dispatcher")
                 {
                     sw.WriteLine("!getserver");
-                    String servIP = sr.ReadLine();
+                    String servIPport = sr.ReadLine();
 
-                    tcpClient.Connect(servIP, 501);
+                    char [] sep = {' '};
+                    String[] adr = servIPport.Split(sep);
+
+
+                    tcpClient.Connect(adr[0], Convert.ToInt32( adr[1])); //коннектимся к серверу
                     nstr = tcpClient.GetStream();
                     sw = new StreamWriter(nstr);
                     sw.WriteLine("!Who");
@@ -62,6 +71,7 @@ namespace Client
             catch(Exception ex)
             {
                 MessageBox.Show(ex.Message);
+                this.tcpClient = null;
                 //this.DialogResult=DialogResult.Cancel;
             }
         }
