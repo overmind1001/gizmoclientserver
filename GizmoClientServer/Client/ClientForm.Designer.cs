@@ -48,8 +48,8 @@
             this.lbFilesList = new System.Windows.Forms.ListBox();
             this.menuStripMainMenu = new System.Windows.Forms.MenuStrip();
             this.главнаяToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.выходToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ПодключитьсяtoolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.выходToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tabControl1.SuspendLayout();
             this.tabPageChat.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -124,6 +124,7 @@
             this.btnSend.TabIndex = 2;
             this.btnSend.Text = "Отправить!";
             this.btnSend.UseVisualStyleBackColor = true;
+            this.btnSend.Click += new System.EventHandler(this.btnSend_Click);
             // 
             // label1
             // 
@@ -286,18 +287,18 @@
             this.главнаяToolStripMenuItem.Size = new System.Drawing.Size(63, 20);
             this.главнаяToolStripMenuItem.Text = "Главная";
             // 
-            // выходToolStripMenuItem
-            // 
-            this.выходToolStripMenuItem.Name = "выходToolStripMenuItem";
-            this.выходToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
-            this.выходToolStripMenuItem.Text = "Выход";
-            // 
             // ПодключитьсяtoolStripMenuItem
             // 
             this.ПодключитьсяtoolStripMenuItem.Name = "ПодключитьсяtoolStripMenuItem";
             this.ПодключитьсяtoolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             this.ПодключитьсяtoolStripMenuItem.Text = "Подключиться...";
             this.ПодключитьсяtoolStripMenuItem.Click += new System.EventHandler(this.ПодключитьсяtoolStripMenuItem_Click);
+            // 
+            // выходToolStripMenuItem
+            // 
+            this.выходToolStripMenuItem.Name = "выходToolStripMenuItem";
+            this.выходToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.выходToolStripMenuItem.Text = "Выход";
             // 
             // ClientForm
             // 
