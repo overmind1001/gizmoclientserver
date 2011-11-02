@@ -7,11 +7,11 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
-namespace Server
+namespace FileServer
 {
-    public partial class ServerForm : Form
+    public partial class FileServerForm : Form
     {
-        public ServerForm()
+        public FileServerForm()
         {
             InitializeComponent();
         }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace Server
+namespace FileServer
 {
     static class Program
     {
@@ -15,7 +15,7 @@ namespace Server
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MsgServerForm());
+            Application.Run(new FileServerForm());
         }
     }
 }
