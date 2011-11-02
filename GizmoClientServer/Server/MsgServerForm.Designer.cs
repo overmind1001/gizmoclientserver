@@ -238,7 +238,7 @@
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
             this.tableLayoutPanel2.RowCount = 2;
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 32F));
             this.tableLayoutPanel2.Size = new System.Drawing.Size(294, 282);
             this.tableLayoutPanel2.TabIndex = 0;
             // 
@@ -247,10 +247,10 @@
             this.panel1.Controls.Add(this.button2);
             this.panel1.Controls.Add(this.button1);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel1.Location = new System.Drawing.Point(3, 250);
+            this.panel1.Location = new System.Drawing.Point(3, 253);
             this.panel1.MinimumSize = new System.Drawing.Size(214, 24);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(288, 29);
+            this.panel1.Size = new System.Drawing.Size(288, 26);
             this.panel1.TabIndex = 0;
             // 
             // button1
@@ -279,7 +279,7 @@
             this.listBox1.FormattingEnabled = true;
             this.listBox1.Location = new System.Drawing.Point(3, 3);
             this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(288, 241);
+            this.listBox1.Size = new System.Drawing.Size(288, 244);
             this.listBox1.TabIndex = 1;
             // 
             // MsgServerForm
