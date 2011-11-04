@@ -74,7 +74,7 @@
             this.tabControl1.Location = new System.Drawing.Point(0, 24);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(704, 426);
+            this.tabControl1.Size = new System.Drawing.Size(729, 428);
             this.tabControl1.TabIndex = 0;
             // 
             // tabPageChat
@@ -84,7 +84,7 @@
             this.tabPageChat.Location = new System.Drawing.Point(4, 22);
             this.tabPageChat.Name = "tabPageChat";
             this.tabPageChat.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageChat.Size = new System.Drawing.Size(696, 400);
+            this.tabPageChat.Size = new System.Drawing.Size(721, 402);
             this.tabPageChat.TabIndex = 0;
             this.tabPageChat.Text = "Чат";
             // 
@@ -101,7 +101,7 @@
             this.tableLayoutPanel1.RowCount = 2;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 60F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(690, 394);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(715, 396);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // panel1
@@ -110,15 +110,15 @@
             this.panel1.Controls.Add(this.label1);
             this.panel1.Controls.Add(this.tbMessage);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel1.Location = new System.Drawing.Point(3, 337);
+            this.panel1.Location = new System.Drawing.Point(3, 339);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(684, 54);
+            this.panel1.Size = new System.Drawing.Size(709, 54);
             this.panel1.TabIndex = 1;
             // 
             // btnSend
             // 
             this.btnSend.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnSend.Location = new System.Drawing.Point(588, 28);
+            this.btnSend.Location = new System.Drawing.Point(613, 28);
             this.btnSend.Name = "btnSend";
             this.btnSend.Size = new System.Drawing.Size(89, 23);
             this.btnSend.TabIndex = 2;
@@ -142,7 +142,7 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.tbMessage.Location = new System.Drawing.Point(13, 28);
             this.tbMessage.Name = "tbMessage";
-            this.tbMessage.Size = new System.Drawing.Size(569, 20);
+            this.tbMessage.Size = new System.Drawing.Size(594, 20);
             this.tbMessage.TabIndex = 0;
             // 
             // splitContainer1
@@ -158,8 +158,8 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.groupBoxPeople);
-            this.splitContainer1.Size = new System.Drawing.Size(684, 328);
-            this.splitContainer1.SplitterDistance = 499;
+            this.splitContainer1.Size = new System.Drawing.Size(709, 330);
+            this.splitContainer1.SplitterDistance = 517;
             this.splitContainer1.TabIndex = 2;
             // 
             // groupBoxChat
@@ -168,7 +168,7 @@
             this.groupBoxChat.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBoxChat.Location = new System.Drawing.Point(0, 0);
             this.groupBoxChat.Name = "groupBoxChat";
-            this.groupBoxChat.Size = new System.Drawing.Size(499, 328);
+            this.groupBoxChat.Size = new System.Drawing.Size(517, 330);
             this.groupBoxChat.TabIndex = 1;
             this.groupBoxChat.TabStop = false;
             this.groupBoxChat.Text = "Чат";
@@ -179,7 +179,7 @@
             this.tbChat.Location = new System.Drawing.Point(3, 16);
             this.tbChat.Multiline = true;
             this.tbChat.Name = "tbChat";
-            this.tbChat.Size = new System.Drawing.Size(493, 309);
+            this.tbChat.Size = new System.Drawing.Size(511, 311);
             this.tbChat.TabIndex = 0;
             // 
             // groupBoxPeople
@@ -188,7 +188,7 @@
             this.groupBoxPeople.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBoxPeople.Location = new System.Drawing.Point(0, 0);
             this.groupBoxPeople.Name = "groupBoxPeople";
-            this.groupBoxPeople.Size = new System.Drawing.Size(181, 328);
+            this.groupBoxPeople.Size = new System.Drawing.Size(188, 330);
             this.groupBoxPeople.TabIndex = 3;
             this.groupBoxPeople.TabStop = false;
             this.groupBoxPeople.Text = "Люди";
@@ -200,7 +200,7 @@
             this.lbPeople.Location = new System.Drawing.Point(3, 16);
             this.lbPeople.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
             this.lbPeople.Name = "lbPeople";
-            this.lbPeople.Size = new System.Drawing.Size(175, 309);
+            this.lbPeople.Size = new System.Drawing.Size(182, 311);
             this.lbPeople.TabIndex = 2;
             // 
             // tabPageFileStorage
@@ -210,7 +210,7 @@
             this.tabPageFileStorage.Location = new System.Drawing.Point(4, 22);
             this.tabPageFileStorage.Name = "tabPageFileStorage";
             this.tabPageFileStorage.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageFileStorage.Size = new System.Drawing.Size(696, 400);
+            this.tabPageFileStorage.Size = new System.Drawing.Size(721, 402);
             this.tabPageFileStorage.TabIndex = 1;
             this.tabPageFileStorage.Text = "Файлы";
             // 
@@ -226,7 +226,7 @@
             this.tableLayoutPanel2.RowCount = 2;
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 57F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(690, 394);
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(715, 396);
             this.tableLayoutPanel2.TabIndex = 0;
             // 
             // panel2
@@ -234,15 +234,15 @@
             this.panel2.Controls.Add(this.btnDownload);
             this.panel2.Controls.Add(this.btnUpload);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel2.Location = new System.Drawing.Point(3, 340);
+            this.panel2.Location = new System.Drawing.Point(3, 342);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(684, 51);
+            this.panel2.Size = new System.Drawing.Size(709, 51);
             this.panel2.TabIndex = 0;
             // 
             // btnDownload
             // 
             this.btnDownload.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnDownload.Location = new System.Drawing.Point(390, 10);
+            this.btnDownload.Location = new System.Drawing.Point(415, 10);
             this.btnDownload.Name = "btnDownload";
             this.btnDownload.Size = new System.Drawing.Size(121, 23);
             this.btnDownload.TabIndex = 0;
@@ -252,7 +252,7 @@
             // btnUpload
             // 
             this.btnUpload.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnUpload.Location = new System.Drawing.Point(533, 10);
+            this.btnUpload.Location = new System.Drawing.Point(558, 10);
             this.btnUpload.Name = "btnUpload";
             this.btnUpload.Size = new System.Drawing.Size(132, 23);
             this.btnUpload.TabIndex = 0;
@@ -265,7 +265,7 @@
             this.lbFilesList.FormattingEnabled = true;
             this.lbFilesList.Location = new System.Drawing.Point(3, 3);
             this.lbFilesList.Name = "lbFilesList";
-            this.lbFilesList.Size = new System.Drawing.Size(684, 331);
+            this.lbFilesList.Size = new System.Drawing.Size(709, 333);
             this.lbFilesList.TabIndex = 1;
             // 
             // menuStripMainMenu
@@ -274,7 +274,7 @@
             this.главнаяToolStripMenuItem});
             this.menuStripMainMenu.Location = new System.Drawing.Point(0, 0);
             this.menuStripMainMenu.Name = "menuStripMainMenu";
-            this.menuStripMainMenu.Size = new System.Drawing.Size(704, 24);
+            this.menuStripMainMenu.Size = new System.Drawing.Size(729, 24);
             this.menuStripMainMenu.TabIndex = 1;
             this.menuStripMainMenu.Text = "menuStrip1";
             // 
@@ -304,7 +304,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(704, 450);
+            this.ClientSize = new System.Drawing.Size(729, 452);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.menuStripMainMenu);
             this.MainMenuStrip = this.menuStripMainMenu;
