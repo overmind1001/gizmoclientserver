@@ -89,7 +89,7 @@ namespace Client
                 
             }
         }
-
+        //регистрация на сервере (через диспетчер или напрямую)
         private bool registerMe(NetworkStream ns,string name)
         {
             StreamWriter sw = new StreamWriter(ns);
@@ -105,6 +105,7 @@ namespace Client
             else
                 return false;
         }
+        //получение контакт листа
         private void getContactListFromServer(NetworkStream ns)
         {
             StreamWriter sw = new StreamWriter(ns);
@@ -122,6 +123,7 @@ namespace Client
                 lbPeople.Items.Add(s);
             }
         }
+        //получение файл листа
         private void getFileListFromServer(NetworkStream ns)
         {
             StreamWriter sw = new StreamWriter(ns);
@@ -139,6 +141,7 @@ namespace Client
                 lbFilesList.Items.Add(s);
             }
         }
+        //получение адреса файл-сервера для заливки файла
         private string getFreeFileServer(NetworkStream ns)
         {
             StreamWriter sw = new StreamWriter(ns);
@@ -153,6 +156,7 @@ namespace Client
             //return addrOfFS[1] + " " + addrOfFS[2];//ip port
             return answer;
         }
+        //получение адреса файл-сервера, с которого можно скачать данный файл
         private string getFileServer(NetworkStream ns,string file)
         {
             StreamWriter sw = new StreamWriter(ns);
@@ -168,7 +172,7 @@ namespace Client
 
             return answer;
         }
-
+        //выгрузка файла на сервер
         private void uploadFile(string ip,int port,string filePath,string fileName)
         {
             TcpClient cl = new TcpClient(ip, port);
@@ -198,6 +202,36 @@ namespace Client
             nps.Close();
             fs.Close();
         }
+        //загрузка файла с сервера
+        //это надо тоже запилить в отдельный поток
+        private void downloadFile(string ip, int port, string Path, string fileName)
+        {
+            NamedPipeServerStream nps = new NamedPipeServerStream("ololo");//тут надо сделать генерацию рандомного имени
+            
+
+            TcpClient cl = new TcpClient(ip, port);
+            NetworkStream ns = cl.GetStream();
+            StreamWriter sw = new StreamWriter(ns);
+            sw.WriteLine("!downloadfile " + fileName +" "+ nps.GetImpersonationUserName());
+            sw.Close();
+            ns.Close();
+            cl.Close();
+
+            nps.WaitForConnection();
+
+            FileStream fs = new FileStream(Path, FileMode.Create);
+
+            byte[] buf = new byte[10];
+            int byteCount;
+
+            while ((byteCount = nps.Read(buf, 0, buf.Length)) > 0)
+            {
+                fs.Write(buf, 0, byteCount);
+            }
+            fs.Close();
+            nps.Close();
+        }
+        //посылка сообщения
         private void sendMessage(NetworkStream ns,string mes)
         {
             StreamWriter sw = new StreamWriter(ns);
