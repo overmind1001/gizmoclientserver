@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MsgServer", "Server\MsgServ
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileServer", "FileServer\FileServer.csproj", "{CA876F16-BCE5-4B98-A689-0B56D4A108FE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dispatcher", "Dispatcher\Dispatcher.csproj", "{8B7AA2EA-7F04-4930-9ACB-2B23805C5973}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -29,6 +31,10 @@ Global
 		{CA876F16-BCE5-4B98-A689-0B56D4A108FE}.Debug|x86.Build.0 = Debug|x86
 		{CA876F16-BCE5-4B98-A689-0B56D4A108FE}.Release|x86.ActiveCfg = Release|x86
 		{CA876F16-BCE5-4B98-A689-0B56D4A108FE}.Release|x86.Build.0 = Release|x86
+		{8B7AA2EA-7F04-4930-9ACB-2B23805C5973}.Debug|x86.ActiveCfg = Debug|x86
+		{8B7AA2EA-7F04-4930-9ACB-2B23805C5973}.Debug|x86.Build.0 = Debug|x86
+		{8B7AA2EA-7F04-4930-9ACB-2B23805C5973}.Release|x86.ActiveCfg = Release|x86
+		{8B7AA2EA-7F04-4930-9ACB-2B23805C5973}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
