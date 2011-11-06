@@ -9,9 +9,9 @@ using System.Windows.Forms;
 
 namespace Dispatcher
 {
-    public partial class Form1 : Form
+    public partial class DispatcherForm : Form
     {
-        public Form1()
+        public DispatcherForm()
         {
             InitializeComponent();
         }

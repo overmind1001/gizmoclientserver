@@ -1,6 +1,6 @@
 ﻿namespace Dispatcher
 {
-    partial class Form1
+    partial class DispatcherForm
     {
         /// <summary>
         /// Required designer variable.
@@ -140,7 +140,7 @@
             this.tbLog.Size = new System.Drawing.Size(881, 187);
             this.tbLog.TabIndex = 0;
             // 
-            // Form1
+            // DispatcherForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -152,7 +152,7 @@
             this.Controls.Add(this.groupBox1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
-            this.Name = "Form1";
+            this.Name = "DispatcherForm";
             this.Text = "Диспетчер";
             this.groupBox1.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
