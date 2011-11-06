@@ -29,12 +29,12 @@
         private void InitializeComponent()
         {
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.groupBox3 = new System.Windows.Forms.GroupBox();
-            this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.lbMsgServers = new System.Windows.Forms.ListBox();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.lbFileServers = new System.Windows.Forms.ListBox();
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.lbFiles = new System.Windows.Forms.ListBox();
+            this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.lbClients = new System.Windows.Forms.ListBox();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.tbLog = new System.Windows.Forms.TextBox();
@@ -55,6 +55,15 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Сервера сообщений";
             // 
+            // lbMsgServers
+            // 
+            this.lbMsgServers.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lbMsgServers.FormattingEnabled = true;
+            this.lbMsgServers.Location = new System.Drawing.Point(3, 16);
+            this.lbMsgServers.Name = "lbMsgServers";
+            this.lbMsgServers.Size = new System.Drawing.Size(212, 219);
+            this.lbMsgServers.TabIndex = 0;
+            // 
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.lbFileServers);
@@ -64,6 +73,15 @@
             this.groupBox2.TabIndex = 0;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Сервера файлов";
+            // 
+            // lbFileServers
+            // 
+            this.lbFileServers.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lbFileServers.FormattingEnabled = true;
+            this.lbFileServers.Location = new System.Drawing.Point(3, 16);
+            this.lbFileServers.Name = "lbFileServers";
+            this.lbFileServers.Size = new System.Drawing.Size(212, 219);
+            this.lbFileServers.TabIndex = 0;
             // 
             // groupBox3
             // 
@@ -75,6 +93,15 @@
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Файлы";
             // 
+            // lbFiles
+            // 
+            this.lbFiles.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lbFiles.FormattingEnabled = true;
+            this.lbFiles.Location = new System.Drawing.Point(3, 16);
+            this.lbFiles.Name = "lbFiles";
+            this.lbFiles.Size = new System.Drawing.Size(212, 219);
+            this.lbFiles.TabIndex = 0;
+            // 
             // groupBox4
             // 
             this.groupBox4.Controls.Add(this.lbClients);
@@ -84,33 +111,6 @@
             this.groupBox4.TabIndex = 0;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Клиенты";
-            // 
-            // lbMsgServers
-            // 
-            this.lbMsgServers.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lbMsgServers.FormattingEnabled = true;
-            this.lbMsgServers.Location = new System.Drawing.Point(3, 16);
-            this.lbMsgServers.Name = "lbMsgServers";
-            this.lbMsgServers.Size = new System.Drawing.Size(212, 219);
-            this.lbMsgServers.TabIndex = 0;
-            // 
-            // lbFileServers
-            // 
-            this.lbFileServers.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lbFileServers.FormattingEnabled = true;
-            this.lbFileServers.Location = new System.Drawing.Point(3, 16);
-            this.lbFileServers.Name = "lbFileServers";
-            this.lbFileServers.Size = new System.Drawing.Size(212, 219);
-            this.lbFileServers.TabIndex = 0;
-            // 
-            // lbFiles
-            // 
-            this.lbFiles.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lbFiles.FormattingEnabled = true;
-            this.lbFiles.Location = new System.Drawing.Point(3, 16);
-            this.lbFiles.Name = "lbFiles";
-            this.lbFiles.Size = new System.Drawing.Size(212, 219);
-            this.lbFiles.TabIndex = 0;
             // 
             // lbClients
             // 
@@ -154,6 +154,7 @@
             this.MaximizeBox = false;
             this.Name = "DispatcherForm";
             this.Text = "Диспетчер";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DispatcherForm_FormClosing);
             this.groupBox1.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
             this.groupBox3.ResumeLayout(false);
