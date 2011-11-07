@@ -13,13 +13,6 @@ using System.IO.Pipes;
 
 namespace MsgServer
 {
-    enum ServerState
-    {
-        Stopped,
-        Running,
-        Started
-    }
-
     public partial class MsgServerForm : Form
     {
         // Поля
@@ -56,6 +49,8 @@ namespace MsgServer
         /// Состояние сервера
         /// </summary>
         private ServerState state;
+
+        private enum ServerState { Stopped, Running, Started };
 
 
         // Методы
