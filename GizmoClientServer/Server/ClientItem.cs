@@ -85,8 +85,19 @@ namespace MsgServer
             writer.WriteLine("!message " + name + ":" + text); 
         }
 
+
         /// <summary>
-        /// Обрабатывает поступающие сообщения клиента
+        /// Послать сообщение этому клиенту
+        /// </summary>
+        /// <param name="text">текст сообщения</param>
+        public void SendText(string text)
+        {
+            StreamWriter writer = new StreamWriter(m_Tcp.GetStream());
+            writer.WriteLine(text);
+        }
+
+        /// <summary>
+        /// Обрабатывает поступающие сообщения от клиента
         /// </summary>
         private void ServeThreadFunc()
         {
@@ -116,15 +127,15 @@ namespace MsgServer
                 {
                     // кто
                     case "!who":
-                        writer.WriteLine("messageserver");
+                        SendText("messageserver");
                         break;
 
                     // регистрация этого клиента
                     case "!register":
                         if (Registry(param))
-                            writer.WriteLine("!registred");
+                            SendText("!registred");
                         else
-                            writer.WriteLine("!unregistred");
+                            SendText("!unregistred");
                         break;
 
                     // сообщение всем от этого клиента
@@ -132,6 +143,8 @@ namespace MsgServer
                         SendTextToAll(param);
                         break;
                 }
+
+                Thread.Sleep(100000);
 
             }
             // завершение потока
