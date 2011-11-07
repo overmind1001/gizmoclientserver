@@ -18,6 +18,10 @@ namespace Client
         public ConnectForm()
         {
             InitializeComponent();
+            tbIp.Text = "localhost";
+            tbName.Text = "Sanya";
+            numericUpDownPort.Value = 500;
+
             this.DialogResult= DialogResult.Cancel;
         }
         private bool IpIsValid()
@@ -40,6 +44,7 @@ namespace Client
                 tcpClient=new TcpClient(tbIp.Text,Convert.ToInt32( numericUpDownPort.Value));
                 NetworkStream nstr=tcpClient.GetStream();
                 StreamWriter sw = new StreamWriter(nstr);
+                sw.AutoFlush = true;
                 sw.WriteLine("!who");
 
                 StreamReader sr = new StreamReader(nstr);
@@ -49,7 +54,7 @@ namespace Client
                 {
                     sw.WriteLine("!getserver");
                     String servIPport = sr.ReadLine();
-
+                    
                     char [] sep = {' '};
                     String[] adr = servIPport.Split(sep);
 

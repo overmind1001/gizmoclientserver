@@ -13,7 +13,7 @@ namespace Dispatcher
         public int Port { get; set; }
         public TcpClient tcpClient { get; set; }
 
-
+        public uint ClientsCount { get; set; }
         //только для чтения
         public string Address
         {

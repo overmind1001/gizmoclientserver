@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.Net.Sockets;
 using System.Threading;
 using System.Net;
+using System.IO;
 
 namespace Dispatcher
 {
@@ -59,8 +60,41 @@ namespace Dispatcher
             using (TcpClient tcpClient = (TcpClient) tcpclient)
             using (NetworkStream ns = tcpClient.GetStream())
             {
-
-                //TODO Взаимодействие с клиентами
+                StreamReader sr = new StreamReader(ns);
+                sr.BaseStream.ReadTimeout = 20000;//ожидание 20 сек.
+                StreamWriter sw = new StreamWriter(ns);
+                sw.AutoFlush = true;
+                string cmd;
+                
+                while (tcpClient.Connected)
+                {
+                    //TODO Взаимодействие с клиентами
+                    try
+                    {
+                        cmd = sr.ReadLine();
+                        switch (cmd)
+                        {
+                            case "!who":
+                                sw.WriteLine("dispatcher");
+                                break;
+                            case "!getserver":
+                                ServerInfo msgServ;
+                                lock (MsgServers)
+                                {
+                                    Random r = new Random();
+                                    int i=r.Next(0, MsgServers.Count-1);
+                                    msgServ = MsgServers[i];
+                                }
+                                sw.WriteLine(String.Format("{0} {1}",msgServ.Ip,msgServ.Port));
+                                break;
+                        }
+                    }
+                    catch (IOException ioex)
+                    {
+                        tbLog.Text +=Environment.NewLine+ ioex.Message ;
+                        break;
+                    }
+                }
             }
         }
 
