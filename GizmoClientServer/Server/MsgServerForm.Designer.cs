@@ -244,7 +244,6 @@
             this.Text = "Сервер сообщений";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MsgServerForm_FormClosed);
             this.Load += new System.EventHandler(this.MsgServerForm_Load);
-            this.Leave += new System.EventHandler(this.MsgServerForm_Leave);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
             this.menuStrip1.ResumeLayout(false);
