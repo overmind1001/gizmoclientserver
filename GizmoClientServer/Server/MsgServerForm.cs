@@ -8,6 +8,8 @@ using System.Text;
 using System.Windows.Forms;
 using System.Net.Sockets;
 using System.Threading;
+using System.IO;
+using System.IO.Pipes;
 
 namespace MsgServer
 {
@@ -43,6 +45,10 @@ namespace MsgServer
         /// Поток реализует обработку запросов к серверу
         /// </summary>
         private Thread mainMsgThread;
+        /// <summary>
+        /// Остановлен ли сервер
+        /// </summary>
+        private bool isServerStopped;
 
 
         // Методы
@@ -67,28 +73,40 @@ namespace MsgServer
         /// <returns>удачно ли</returns>
         private bool ConnectToDispatcher()
         {
+            MessageBox.Show("Не удалось подключиться к диспетчеру. Сервер работает в автономном режиме\n" +
+                            "Порт сервера: " + serverPort.ToString());
             return false;
+        }
+
+        /// <summary>
+        /// Отключаемся от диспетчера
+        /// </summary>
+        private void DisconnectToDispatcher()
+        {
         }
 
         /// <summary>
         /// Запуск сервера
         /// </summary>
         /// <returns></returns>
-        private bool StartServer()
+        private void StartServer()
         {
             isIsolated = !ConnectToDispatcher();
+
+            listener.Start();
             mainMsgThread.Start();
-            return true;
         }
 
         /// <summary>
         /// Сушим весла
         /// </summary>
-        private bool StopServer()
+        private void StopServer()
         {
             isIsolated = true;
-            mainMsgThread.Suspend();
-            return true;
+            DisconnectToDispatcher();
+
+            listener.Stop();
+            mainMsgThread.Abort();
         }
 
         /// <summary>
@@ -131,14 +149,40 @@ namespace MsgServer
             Init();
         }
 
+        public void Register(TcpClient tcp, string name)
+        {
+            if (!tcp.Connected)
+                return;
+
+            ClientItem client = new ClientItem(tcp, name);
+            clientsList.Add(client);
+        }
+
         /// <summary>
         /// В отдельном потоке. Обрабатывает общие и служебные запросы к серверу
         /// </summary>
         public void MainMsgFunc()
         {
-            while (true)
+            while (!isServerStopped)
             {
+                TcpClient tcp = listener.AcceptTcpClient();
+                NetworkStream stream = tcp.GetStream();
+                StreamReader reader = new StreamReader(stream);
+
+                string cmd = reader.ReadLine();
+                string[] cmdArr = cmd.Split(new char[]{' '});
+
+                switch(cmdArr[0])
+                {
+                    // Клиент хочет зарегистрироваться
+                    case "!register":
+                        if (cmdArr.Length == 2)
+                            Register(tcp, cmd.Split(new char[] { ' ' })[1]);
+                        break;
+                }
             }
         }
+
+
     }
 }
