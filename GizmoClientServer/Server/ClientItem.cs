@@ -10,15 +10,6 @@ using System.IO.Pipes;
 namespace MsgServer
 {
     /// <summary>
-    /// Состояние клиента
-    /// </summary>
-    enum ClientState
-    {
-        Connected,
-        Disconnected
-    };
-
-    /// <summary>
     /// Класс клиента
     /// </summary>
     class ClientItem
@@ -27,6 +18,7 @@ namespace MsgServer
         private TcpClient m_Tcp;
         private Thread m_ServeThread;
         private ClientState m_State;
+        private enum ClientState { Connected, Disconnected };
 
         public ClientItem(TcpClient tcp, string name)
         {
