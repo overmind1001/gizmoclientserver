@@ -44,10 +44,10 @@ namespace Client
                 tcpClient=new TcpClient(tbIp.Text,Convert.ToInt32( numericUpDownPort.Value));
                 NetworkStream nstr=tcpClient.GetStream();
                 StreamWriter sw = new StreamWriter(nstr);
+                StreamReader sr = new StreamReader(nstr);
                 sw.AutoFlush = true;
                 sw.WriteLine("!who");
 
-                StreamReader sr = new StreamReader(nstr);
                 String who = sr.ReadLine();
                 //если через диспетчера
                 if (who == "dispatcher")
