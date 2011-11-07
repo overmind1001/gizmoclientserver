@@ -13,6 +13,13 @@ using System.IO.Pipes;
 
 namespace MsgServer
 {
+    enum ServerState
+    {
+        Stopped,
+        Running,
+        Started
+    }
+
     public partial class MsgServerForm : Form
     {
         // Поля
@@ -46,9 +53,9 @@ namespace MsgServer
         /// </summary>
         private Thread mainMsgThread;
         /// <summary>
-        /// Остановлен ли сервер
+        /// Состояние сервера
         /// </summary>
-        private bool isServerStopped;
+        private ServerState state;
 
 
         // Методы
@@ -64,7 +71,7 @@ namespace MsgServer
             serversList     = new List<ServerItem>();
             clientsList     = new List<ClientItem>();
             listener        = new TcpListener(serverPort);
-            mainMsgThread   = new Thread(MainMsgFunc);
+            state           = ServerState.Started;
         }
 
         /// <summary>
@@ -73,7 +80,7 @@ namespace MsgServer
         /// <returns>удачно ли</returns>
         private bool ConnectToDispatcher()
         {
-            MessageBox.Show("Не удалось подключиться к диспетчеру. Сервер работает в автономном режиме\n" +
+            MessageBox.Show("Не удалось подключиться к диспетчеру.\nСервер работает в автономном режиме\n" +
                             "Порт сервера: " + serverPort.ToString());
             return false;
         }
@@ -91,10 +98,15 @@ namespace MsgServer
         /// <returns></returns>
         private void StartServer()
         {
-            isIsolated = !ConnectToDispatcher();
+            if (state == ServerState.Running)
+                return;
 
-            listener.Start();
+            state = ServerState.Running;
+
+            isIsolated = !ConnectToDispatcher();
+            mainMsgThread = new Thread(MainMsgFunc);
             mainMsgThread.Start();
+            lblStatus.Text = isIsolated ? "автономно" : "подключен";
         }
 
         /// <summary>
@@ -102,11 +114,22 @@ namespace MsgServer
         /// </summary>
         private void StopServer()
         {
+            if (state == ServerState.Stopped)
+                return;
+
+            state = ServerState.Stopped;
+
             isIsolated = true;
             DisconnectToDispatcher();
 
+            if (mainMsgThread != null)
+                mainMsgThread.Abort();
+
             listener.Stop();
-            mainMsgThread.Abort();
+
+            lstClients.Items.Clear();
+            lstServers.Items.Clear();
+            lblStatus.Text = "отключен";
         }
 
         /// <summary>
@@ -149,6 +172,11 @@ namespace MsgServer
             Init();
         }
 
+        /// <summary>
+        /// Регистрирует нового клиента
+        /// </summary>
+        /// <param name="tcp">TCP</param>
+        /// <param name="name">имя</param>
         public void Register(TcpClient tcp, string name)
         {
             if (!tcp.Connected)
@@ -156,6 +184,10 @@ namespace MsgServer
 
             ClientItem client = new ClientItem(tcp, name);
             clientsList.Add(client);
+            client.StartServe(); // запускаем поток обслуживания
+
+            lstClients.Items.Add(name);
+            lstClients.Top = lstClients.Items.Count;
         }
 
         /// <summary>
@@ -163,9 +195,14 @@ namespace MsgServer
         /// </summary>
         public void MainMsgFunc()
         {
-            while (!isServerStopped)
+            listener.Start();
+            while (true)
             {
                 TcpClient tcp = listener.AcceptTcpClient();
+
+                if (tcp == null)
+                    continue;
+
                 NetworkStream stream = tcp.GetStream();
                 StreamReader reader = new StreamReader(stream);
 
@@ -183,6 +220,14 @@ namespace MsgServer
             }
         }
 
+        private void MsgServerForm_Leave(object sender, EventArgs e)
+        {
+            
+        }
 
+        private void MsgServerForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            StopServer();
+        }
     }
 }
