@@ -169,15 +169,15 @@ namespace MsgServer
                 NetworkStream stream = tcp.GetStream();
                 StreamReader reader = new StreamReader(stream);
 
-                string cmd = reader.ReadLine();
-                string[] cmdArr = cmd.Split(new char[]{' '});
+                string line = reader.ReadLine();
+                string[] cmdArr = line.Split(new char[] { ' ' });
 
                 switch(cmdArr[0])
                 {
                     // Клиент хочет зарегистрироваться
                     case "!register":
-                        if (cmdArr.Length == 2)
-                            Register(tcp, cmd.Split(new char[] { ' ' })[1]);
+                        if (cmdArr.Length >= 2)
+                            Register(tcp, line.Substring(cmdArr[0].Length));
                         break;
                 }
             }
