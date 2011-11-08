@@ -54,37 +54,46 @@ namespace Client
             TcpClient tcpClient =(TcpClient) tcpCliento;
             NetworkStream ns = tcpClient.GetStream();
             StreamReader sr = new StreamReader(ns);
+            sr.BaseStream.ReadTimeout = 20000;//20 сек ждем, затем снова пытаемся читать
             char[] sep = { ' ' };
             while (tcpClient.Connected)
             {
-                string cmd = sr.ReadLine();
-                string[] splited = cmd.Split(sep);
-
-                switch (splited[0])
+                try
                 {
-                    case "!message"://прием сообщения
-                        string message = cmd.Substring(splited[0].Length);
-                        this.tbChat.Text += message + Environment.NewLine;
-                        break;
-                    case "!clientregistered":
-                        string cl = splited[1];
-                        this.lbPeople.Items.Add(cl);
-                        break;
-                    case "!clientunregistered":
-                        cl = splited[1];
-                        this.lbPeople.Items.Remove(cl);
-                        break;
-                    case "!addfile":
-                        string file = splited[1];
-                        lbFilesList.Items.Add(file);
-                        break;
-                    case "!deletefile":
-                        file = splited[1];
-                        lbFilesList.Items.Remove(file);
-                        break;
-                    default:
-                        MessageBox.Show("неизвестная команда!");
-                        break;
+                    string cmd = sr.ReadLine();
+                    string[] splited = cmd.Split(sep);
+
+                    switch (splited[0])
+                    {
+                        case "!message"://прием сообщения
+                            string message = cmd.Substring(splited[0].Length);
+                            this.tbChat.Text += message + Environment.NewLine;
+                            break;
+                        case "!clientregistered":
+                            string cl = splited[1];
+                            this.lbPeople.Items.Add(cl);
+                            break;
+                        case "!clientunregistered":
+                            cl = splited[1];
+                            this.lbPeople.Items.Remove(cl);
+                            break;
+                        case "!addfile":
+                            string file = splited[1];
+                            lbFilesList.Items.Add(file);
+                            break;
+                        case "!deletefile":
+                            file = splited[1];
+                            lbFilesList.Items.Remove(file);
+                            break;
+                        default:
+                            MessageBox.Show("неизвестная команда!");
+                            break;
+
+                    }
+                }
+                catch (IOException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Client. за 20 сек сервер ничего не сказал");
                 }
                 
             }
