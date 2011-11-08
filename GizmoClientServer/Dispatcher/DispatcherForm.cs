@@ -92,7 +92,6 @@ namespace Dispatcher
                     catch (IOException ioex)
                     {
                         tbLog.Text +=Environment.NewLine+ ioex.Message ;
-                        break;
                     }
                 }
             }
