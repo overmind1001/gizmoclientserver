@@ -206,8 +206,8 @@ namespace Client
         //это надо тоже запилить в отдельный поток
         private void downloadFile(string ip, int port, string Path, string fileName)
         {
-            NamedPipeServerStream nps = new NamedPipeServerStream("ololo");//тут надо сделать генерацию рандомного имени
-            
+            string name = Guid.NewGuid().ToString(); //может так пойдёт
+            NamedPipeServerStream nps = new NamedPipeServerStream(name);            
 
             TcpClient cl = new TcpClient(ip, port);
             NetworkStream ns = cl.GetStream();
