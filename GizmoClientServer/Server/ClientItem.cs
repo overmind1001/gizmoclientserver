@@ -6,6 +6,9 @@ using System.Net.Sockets;
 using System.Threading;
 using System.IO;
 using System.IO.Pipes;
+using System.Windows.Forms;
+
+using Dispatcher;
 
 namespace MsgServer
 {
@@ -22,6 +25,9 @@ namespace MsgServer
         private RegistrationState m_Reg;                            // Состояние регистрации клиента
         private enum RegistrationState { Register, Unregister };
 
+        private NetStreamReaderWriter m_StreamRW;                   // Читатель-писатель потока
+
+
 
 
         public ClientItem(TcpClient tcp)
@@ -31,19 +37,15 @@ namespace MsgServer
                 m_State = ClientState.Connected;
 
             m_Reg = RegistrationState.Unregister; // Вначале клиент незарегистрирован
+
+            m_StreamRW = new NetStreamReaderWriter(m_Tcp.GetStream()); // Создаем читателя-писателя
         }
         ~ClientItem()
         {
             m_ServeThread.Abort();
         }
 
-        /// <summary>
-        /// Послать текстовое сообщение другим клиентам
-        /// </summary>
-        /// <param name="text">текст сообщения</param>
-        private void SendTextToAll(string text)
-        {
-        }
+
 
         /// <summary>
         /// Регистрация клиента на сервере
@@ -59,6 +61,81 @@ namespace MsgServer
             return true;
         }
 
+
+        // Сообщения
+
+        /// <summary>
+        /// Послать сообщение клиенту от...
+        /// </summary>
+        /// <param name="name">имя адресата</param>
+        /// <param name="text">текст сообщения</param>
+        public void SendText(string name, string text)
+        {
+            //  Тут необходимо определиться как идентифицировать клиентов. 
+            //    По именам или идентификаторам. И есть ли возможность повторения имен.
+
+            if (m_Name == name)
+                return;
+
+            m_StreamRW.WriteLine("!message " + name + ":" + text);
+        }
+
+
+        /// <summary>
+        /// Послать сообщение этому клиенту
+        /// </summary>
+        /// <param name="text">текст сообщения</param>
+        public void SendText(string text)
+        {
+            m_StreamRW.WriteLine(text);
+        }
+
+
+        /// <summary>
+        /// Послать текстовое сообщение другим клиентам
+        /// </summary>
+        /// <param name="text">текст сообщения</param>
+        private void SendTextToAll(string text)
+        {
+        }
+
+
+
+        // Запросы
+
+        /// <summary>
+        /// Дай мне список зарегистрированных клиентов
+        /// </summary>
+        private void GetClientList()
+        {
+        }
+
+        /// <summary>
+        /// Дай мне список файлов
+        /// </summary>
+        private void GetFileList()
+        {
+        }
+
+        /// <summary>
+        /// Дай свободный файловый сервер, хочу залить
+        /// </summary>
+        private void GetFreeFileServer()
+        {
+        }
+
+        /// <summary>
+        /// Дай файловый сервер с нужным файлом, хочу скачать
+        /// </summary>
+        /// <param name="filename"></param>
+        private void GetFileServer(string filename)
+        {
+        }
+
+
+
+        // Цикл обработки сообщений
+
         /// <summary>
         /// Запуск потока обработки сообщений клиента
         /// </summary>
@@ -69,43 +146,10 @@ namespace MsgServer
         }
 
         /// <summary>
-        /// Послать сообщение этому клиенту
-        /// </summary>
-        /// <param name="name">имя адресата</param>
-        /// <param name="text">текст сообщения</param>
-        public void SendText(string name, string text)
-        {
-            //  Тут необходимо определиться как идентифицировать клиентов. 
-            //    По именам или идентификаторам. И есть ли возможность повторения имен.
-    
-            if (m_Name == name) 
-                return;
-
-            StreamWriter writer = new StreamWriter(m_Tcp.GetStream());
-            writer.WriteLine("!message " + name + ":" + text); 
-        }
-
-
-        /// <summary>
-        /// Послать сообщение этому клиенту
-        /// </summary>
-        /// <param name="text">текст сообщения</param>
-        public void SendText(string text)
-        {
-            StreamWriter writer = new StreamWriter(m_Tcp.GetStream());
-            writer.AutoFlush = true;
-            writer.WriteLine(text);
-        }
-
-        /// <summary>
         /// Обрабатывает поступающие сообщения от клиента
         /// </summary>
         private void ServeThreadFunc()
         {
-            StreamReader reader = new StreamReader(m_Tcp.GetStream());
-            StreamWriter writer = new StreamWriter(m_Tcp.GetStream());
-            writer.AutoFlush = true;
-
             string line;
             string cmd;
             string param;
@@ -119,7 +163,7 @@ namespace MsgServer
                     break;
                 }
 
-                line = reader.ReadLine();
+                line = m_StreamRW.ReadLine();
                 cmd = line.Split(new char[]{' '})[0];
                 param = line.Substring(cmd.Length);
          
@@ -128,28 +172,64 @@ namespace MsgServer
                 {
                     // кто
                     case "!who":
-                        SendText("messageserver");
+                        {
+                            SendText("messageserver");
+                        }
                         break;
 
                     // регистрация этого клиента
                     case "!register":
-                        if (Registry(param))
-                            SendText("!registred");
-                        else
-                            SendText("!unregistred");
+                        {
+                            if (Registry(param))
+                                SendText("!registred");
+                            else
+                                SendText("!unregistred");
+                        }
                         break;
 
                     // сообщение всем от этого клиента
                     case "!message":
-                        SendTextToAll(param);
+                        {
+                            SendTextToAll(param);
+                        }
                         break;
+                    
+                    // запрос списка контактов
+                    case "!getclientlist":
+                        {
+                            GetClientList();
+                        }
+                        break;
+
+                    // запрос списка файлов
+                    case "!getfilelist":
+                        {
+                            GetFileList();
+                        }
+                        break;
+
+                    // запрос свободного файлового сервера для закачки
+                    case "!getfreefileserver":
+                        {
+                            GetFreeFileServer();
+                        }
+                        break;
+
+                    // запрос файлового сервера для скачки
+                    case "!getfileserver":
+                        {
+                            GetFileServer(param);
+                        }
+                        break;
+
                     default:
-                        System.Windows.Forms.MessageBox.Show("MsgServer: Опаньки! А не знаю такой команды! "+line);
+                        {
+                            SendText("!unknowncmd");
+                            MessageBox.Show("Неизвестная команда от пользователя " + m_Name
+                                             + "\nТекст команды: " + line, "Внимание");
+                        }
                         break;
                 }
-
-                Thread.Sleep(10000);
-
             }
             // завершение потока
         }

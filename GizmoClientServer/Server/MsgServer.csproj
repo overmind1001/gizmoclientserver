@@ -82,6 +82,12 @@
   <ItemGroup>
     <Content Include="Описание проекта.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Dispatcher\Dispatcher.csproj">
+      <Project>{8B7AA2EA-7F04-4930-9ACB-2B23805C5973}</Project>
+      <Name>Dispatcher</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

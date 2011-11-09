@@ -50,7 +50,7 @@ namespace MsgServer
             isIsolated      = false;
 
             serversList     = new List<ServerItem>();
-            сlientList = new List<ClientItem>();
+            сlientList      = new List<ClientItem>();
 
 
             listener        = new TcpListener(serverIp, serverPort);
@@ -126,6 +126,10 @@ namespace MsgServer
         }
 
 
+
+        /// <summary>
+        /// Конструктор
+        /// </summary>
         public MsgServerForm()
         {
             InitializeComponent();
