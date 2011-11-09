@@ -93,6 +93,7 @@ namespace MsgServer
         public void SendText(string text)
         {
             StreamWriter writer = new StreamWriter(m_Tcp.GetStream());
+            writer.AutoFlush = true;
             writer.WriteLine(text);
         }
 
@@ -142,9 +143,12 @@ namespace MsgServer
                     case "!message":
                         SendTextToAll(param);
                         break;
+                    default:
+                        System.Windows.Forms.MessageBox.Show("MsgServer: Опаньки! А не знаю такой команды! "+line);
+                        break;
                 }
 
-                Thread.Sleep(100000);
+                Thread.Sleep(10000);
 
             }
             // завершение потока

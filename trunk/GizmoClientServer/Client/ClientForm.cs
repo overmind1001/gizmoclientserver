@@ -102,6 +102,7 @@ namespace Client
         private bool registerMe(NetworkStream ns,string name)
         {
             StreamWriter sw = new StreamWriter(ns);
+            sw.AutoFlush = true;
             sw.WriteLine("!register "+name);
 
             StreamReader sr = new StreamReader(ns);
@@ -118,6 +119,7 @@ namespace Client
         private void getContactListFromServer(NetworkStream ns)
         {
             StreamWriter sw = new StreamWriter(ns);
+            sw.AutoFlush = true;
             sw.WriteLine("!getclientlist");         //посылка команды
 
             StreamReader sr = new StreamReader(ns);
