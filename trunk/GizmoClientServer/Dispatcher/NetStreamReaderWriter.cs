@@ -6,7 +6,7 @@ using System.IO;
 
 namespace Dispatcher
 {
-    class NetStreamReaderWriter
+    public class NetStreamReaderWriter
     {
         private StreamReader sr;
         private StreamWriter sw;
