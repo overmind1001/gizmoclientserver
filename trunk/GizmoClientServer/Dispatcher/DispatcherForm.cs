@@ -134,6 +134,8 @@ namespace Dispatcher
                                 netStream.WriteLine("dispatcher");
                                 break;
                             case "!registerme":
+                                //if(AddServer(param,"ip",
+                                netStream.WriteLine("registered");
                                 break;
                             case "!getserverlist":
                                 break;
@@ -162,7 +164,16 @@ namespace Dispatcher
                 }
             }
         }
+        bool AddServer(string type, string ip, int port)
+        {
+            string serverRecord = type+"_"+ip.ToString()+"_"+port;
+            ServerInfo serverInfo = new ServerInfo();
+            serverInfo.Ip = ip;
+            serverInfo.Port = port;
+            MsgServers.Add(serverInfo);
 
+            return true;
+        }
         //Широковещание
         void broadcastSelfInfo()
         {
@@ -183,7 +194,6 @@ namespace Dispatcher
         {
             Running = false;
             Process.GetCurrentProcess().Kill();
-        
         }
     }
 }
