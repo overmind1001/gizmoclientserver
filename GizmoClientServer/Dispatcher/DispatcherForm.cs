@@ -10,6 +10,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Net;
 using System.IO;
+using System.Diagnostics;
 
 namespace Dispatcher
 {
@@ -113,8 +114,52 @@ namespace Dispatcher
             using (TcpClient tcpClient = (TcpClient)tcpclient)
             using (NetworkStream ns = tcpClient.GetStream())
             {
+                NetStreamReaderWriter netStream = new NetStreamReaderWriter(ns);
+                string cmd;
+                string line;
+                string param;
 
-                //TODO Взаимодействие с серверами
+                while (tcpClient.Connected)
+                {
+                    //TODO Взаимодействие с серверами
+                    try
+                    {
+                        line = netStream.ReadLine();
+                        cmd = line.Split(new char[] { ' ' })[0];
+                        param = line.Substring(cmd.Length);
+
+                        switch (cmd)
+                        {
+                            case "!who":
+                                netStream.WriteLine("dispatcher");
+                                break;
+                            case "!registerme":
+                                break;
+                            case "!getserverlist":
+                                break;
+                            case "!getclientlist":
+                                break;
+                            case "!clientregistered":
+                                break;
+                            case "!clientunregistered":
+                                break;
+                            case "!getfilelist":
+                                break;
+                            case "!getfreefileserver":
+                                break;
+                            case "!getfileserver":
+                                break;
+
+                            default:
+                                MessageBox.Show("Dispatcher: Неизвестная команда. "+line);
+                                break;
+                        }
+                    }
+                    catch (IOException ioex)
+                    {
+                        tbLog.Text += Environment.NewLine + ioex.Message;
+                    }
+                }
             }
         }
 
@@ -137,7 +182,8 @@ namespace Dispatcher
         private void DispatcherForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             Running = false;
-            Thread.CurrentThread.Abort();
+            Process.GetCurrentProcess().Kill();
+        
         }
     }
 }
