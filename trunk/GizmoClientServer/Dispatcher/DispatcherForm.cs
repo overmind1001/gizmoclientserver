@@ -115,9 +115,10 @@ namespace Dispatcher
             using (NetworkStream ns = tcpClient.GetStream())
             {
                 NetStreamReaderWriter netStream = new NetStreamReaderWriter(ns);
+                string []parameters;
                 string cmd;
                 string line;
-                string param;
+                string param;       //если параметр 1
 
                 while (tcpClient.Connected)
                 {
@@ -125,27 +126,35 @@ namespace Dispatcher
                     try
                     {
                         line = netStream.ReadLine();
-                        cmd = line.Split(new char[] { ' ' })[0];
+                        parameters = line.Split(new char[] { ' ' });
+                        cmd = parameters[0];
                         param = line.Substring(cmd.Length);
 
                         switch (cmd)
                         {
-                            case "!who":
+                            case "!who":        //к кому я подключился?
                                 netStream.WriteLine("dispatcher");
                                 break;
-                            case "!registerme":
-                                //if(AddServer(param,"ip",
-                                netStream.WriteLine("registered");
+                            case "!register":   //зарегистрируй меня
+                                if (AddServer(parameters[1], parameters[2], Convert.ToInt32(parameters[3])))
+                                    netStream.WriteLine("registered");
+                                else
+                                    netStream.WriteLine("notregistered");
                                 break;
-                            case "!getserverlist":
+                            case "!getserverlist":  //дай мне список серверв сообщений
+                                SendServerList(ns);
                                 break;
-                            case "!getclientlist":
+                            case "!getclientlist":  //дай мне список клиентов
+                                SendClientList(ns);
                                 break;
-                            case "!clientregistered":
+                            case "!clientregistered":   //появился новый клиент
+                                if( RegisterClient(param))
+                                    SendTextToAllServers(line);
                                 break;
                             case "!clientunregistered":
                                 break;
                             case "!getfilelist":
+                                SendFileList(ns);
                                 break;
                             case "!getfreefileserver":
                                 break;
@@ -171,6 +180,76 @@ namespace Dispatcher
             serverInfo.Ip = ip;
             serverInfo.Port = port;
             MsgServers.Add(serverInfo);
+
+            this.lbMsgServers.DataSource = null;//отображаем в листбоксе
+            this.lbMsgServers.DataSource = MsgServers;
+
+            return true;
+        }
+
+//наверное надо поставить блокировки на коллекции
+        void SendServerList(Stream stream)
+        {
+            NetStreamReaderWriter ns = new NetStreamReaderWriter(stream);
+            string line = "";
+            for(int i=0;i<MsgServers.Count;i++)
+            {
+                line += MsgServers[i].Ip + " " + MsgServers[i].Port.ToString();
+                if (i != MsgServers.Count - 1)
+                    line += "|";
+            }
+            ns.WriteLine(line);
+        }
+        void SendClientList(Stream stream)
+        {
+            NetStreamReaderWriter ns = new NetStreamReaderWriter(stream);
+            string line = "";
+            for (int i = 0; i < Clients.Count; i++)
+            {
+                line += Clients[i].ClientName;
+                if (i != Clients.Count - 1)
+                    line += "|";
+            }
+            ns.WriteLine(line);
+        }
+        void SendFileList(Stream stream)
+        {
+            NetStreamReaderWriter ns = new NetStreamReaderWriter(stream);
+            string line = "";
+            for (int i = 0; i < Files.Count; i++)
+            {
+                line += Files[i].Filename;
+                if (i != Files.Count - 1)
+                    line += "|";
+            }
+            ns.WriteLine(line);
+        }
+        void SendTextToAllServers(string line)
+        {//блокировки?
+            for (int i = 0; i < MsgServers.Count;i++ )
+            {
+                try
+                {
+                    NetStreamReaderWriter ns = new NetStreamReaderWriter(MsgServers[i].tcpClient.GetStream());
+                    ns.WriteLine(line);
+                }
+                catch(IOException ioex)
+                {
+                    System.Diagnostics.Debug.AutoFlush = true;
+                    System.Diagnostics.Debug.WriteLine("Dispatcher:"+ioex.Message+"похоже что один из сереров отключился или поломался!");
+                }
+            }
+        }
+        bool RegisterClient(string name)
+        {//блокировки??
+            ClientInfo exsisting = Clients.Find((x) => {return x.ClientName == name; });
+            if (exsisting != null)
+                return false;
+
+            ClientInfo newClient = new ClientInfo();
+            newClient.ClientName = name;
+
+            Clients.Add(newClient);
 
             return true;
         }
