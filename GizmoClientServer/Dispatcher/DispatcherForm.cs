@@ -42,7 +42,47 @@ namespace Dispatcher
             //запустить поток для посылки широковещательных сообщений
             Thread broadcastThread = new Thread(broadcastSelfInfo);
             broadcastThread.Start();
+            //запустить поток проверки доступности подключения
+            Thread availableCheckThred = new Thread(availableCheck);
+            availableCheckThred.Start();
 
+
+        }
+        void availableCheck()
+        {
+            List<ServerInfo> unregisteredServers = new List<ServerInfo>();
+            while (Running)
+            {
+                unregisteredServers.Clear();
+                foreach (ServerInfo s in MsgServers)
+                {
+                    if (s.tcpClient.Connected == false)//сервер отключен
+                    {
+                        unregisteredServers.Add(s);
+                    }
+                }
+
+                foreach (ServerInfo s in unregisteredServers)
+                {
+                    unregisterServer(s.Ip, s.Port);
+                    SendTextToAllServers(String.Format( "!serverunregistered {0} {1}",s.Ip,s.Port));
+                }
+
+                Thread.Sleep(1000);
+            }
+        }
+        void unregisterServer(string ip, int port)
+        {
+            for (int i = 0; i < MsgServers.Count; i++)
+            {
+                if (MsgServers[i].Ip == ip && MsgServers[i].Port==port)
+                {
+                    MsgServers.RemoveAt(i);
+                    lbMsgServers.DataSource = null;
+                    lbMsgServers.DataSource = MsgServers;
+                    break;
+                }
+            }
         }
 
         //взаимодействие с клиентами
@@ -152,6 +192,8 @@ namespace Dispatcher
                                     SendTextToAllServers(line);
                                 break;
                             case "!clientunregistered":
+                                UnregisterClient(param);
+                                SendTextToAllServers(line);
                                 break;
                             case "!getfilelist":
                                 SendFileList(ns);
@@ -251,7 +293,23 @@ namespace Dispatcher
 
             Clients.Add(newClient);
 
+            lbClients.DataSource = null;
+            lbClients.DataSource = Clients;
+
             return true;
+        }
+        void UnregisterClient(string name)
+        {
+            for (int i = 0; i < Clients.Count; i++)
+            {
+                if (Clients[i].ClientName == name)
+                {
+                    Clients.RemoveAt(i);
+                    lbClients.DataSource = null;
+                    lbClients.DataSource = Clients;
+                    break;
+                }
+            }
         }
         //Широковещание
         void broadcastSelfInfo()
