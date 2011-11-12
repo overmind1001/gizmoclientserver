@@ -80,9 +80,15 @@ namespace Dispatcher
                     MsgServers.RemoveAt(i);
                     lbMsgServers.DataSource = null;
                     lbMsgServers.DataSource = MsgServers;
+
+                    SendServerUnregistered(ip,port);
                     break;
                 }
             }
+        }
+        void SendServerUnregistered(string ip, int port)
+        {
+            SendTextToAllServers(string.Format("!serverunregistered {0} {1}",ip,port));
         }
 
         //взаимодействие с клиентами
@@ -199,8 +205,24 @@ namespace Dispatcher
                                 SendFileList(ns);
                                 break;
                             case "!getfreefileserver":
+                                if (FileServers.Count > 0)
+                                {
+                                    ServerInfo fileServ;
+                                    lock (FileServers)
+                                    {
+                                        Random r = new Random();
+                                        int i = r.Next(0, FileServers.Count - 1);
+                                        fileServ = FileServers[i];
+                                    }
+                                    netStream.WriteLine(String.Format("{0} {1}", fileServ.Ip, fileServ.Port));
+                                }
+                                else
+                                {
+                                    netStream.WriteLine("error");
+                                }
                                 break;
                             case "!getfileserver":
+                                //////////////////////////////////////TODO
                                 break;
 
                             default:
@@ -221,10 +243,23 @@ namespace Dispatcher
             ServerInfo serverInfo = new ServerInfo();
             serverInfo.Ip = ip;
             serverInfo.Port = port;
-            MsgServers.Add(serverInfo);
 
-            this.lbMsgServers.DataSource = null;//отображаем в листбоксе
-            this.lbMsgServers.DataSource = MsgServers;
+            if (type == "messageserver")
+            {
+
+                MsgServers.Add(serverInfo);
+
+                this.lbMsgServers.DataSource = null;//отображаем в листбоксе
+                this.lbMsgServers.DataSource = MsgServers;
+
+                SendTextToAllServers(string.Format("!serverregistered {0} {1}",ip,port));
+            }
+            else
+            {
+                FileServers.Add(serverInfo);
+                lbFileServers.DataSource = null;
+                lbFileServers.DataSource = FileServers;
+            }
 
             return true;
         }
