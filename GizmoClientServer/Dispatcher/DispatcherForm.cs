@@ -53,36 +53,42 @@ namespace Dispatcher
             List<ServerInfo> unregisteredServers = new List<ServerInfo>();
             while (Running)
             {
-                unregisteredServers.Clear();
-                foreach (ServerInfo s in MsgServers)
+                lock (MsgServers)
                 {
-                    if (s.tcpClient.Connected == false)//сервер отключен
+                    unregisteredServers.Clear();
+                    foreach (ServerInfo s in MsgServers)
                     {
-                        unregisteredServers.Add(s);
+                        if (s.tcpClient.Connected == false)//сервер отключен
+                        {
+                            unregisteredServers.Add(s);
+                        }
                     }
                 }
-
+                //TODO добавить проверку файл серверов
                 foreach (ServerInfo s in unregisteredServers)
                 {
                     unregisterServer(s.Ip, s.Port);
-                    SendTextToAllServers(String.Format( "!serverunregistered {0} {1}",s.Ip,s.Port));
+                    //SendTextToAllServers(String.Format( "!serverunregistered {0} {1}",s.Ip,s.Port));
                 }
 
                 Thread.Sleep(1000);
             }
         }
         void unregisterServer(string ip, int port)
-        {
-            for (int i = 0; i < MsgServers.Count; i++)
+        {//TODO Сообщить другим серверам о том, что клиенты или файлы данного сервера стали недоступны!!!
+            lock (MsgServers)
             {
-                if (MsgServers[i].Ip == ip && MsgServers[i].Port==port)
+                for (int i = 0; i < MsgServers.Count; i++)
                 {
-                    MsgServers.RemoveAt(i);
-                    lbMsgServers.DataSource = null;
-                    lbMsgServers.DataSource = MsgServers;
+                    if (MsgServers[i].Ip == ip && MsgServers[i].Port == port)
+                    {
+                        MsgServers.RemoveAt(i);
+                        lbMsgServers.DataSource = null;
+                        lbMsgServers.DataSource = MsgServers;
 
-                    SendServerUnregistered(ip,port);
-                    break;
+                        SendServerUnregistered(ip, port);
+                        break;
+                    }
                 }
             }
         }
@@ -122,7 +128,10 @@ namespace Dispatcher
                         switch (cmd)
                         {
                             case "!who":
-                                sw.WriteLine("dispatcher");
+                                lock (tcpclient)
+                                {
+                                    sw.WriteLine("dispatcher");
+                                }
                                 break;
                             case "!getserver":
                                 ServerInfo msgServ;
@@ -132,7 +141,10 @@ namespace Dispatcher
                                     int i=r.Next(0, MsgServers.Count-1);
                                     msgServ = MsgServers[i];
                                 }
-                                sw.WriteLine(String.Format("{0} {1}",msgServ.Ip,msgServ.Port));
+                                lock (tcpclient)
+                                {
+                                    sw.WriteLine(String.Format("{0} {1}", msgServ.Ip, msgServ.Port));
+                                }
                                 break;
                         }
                     }
@@ -179,19 +191,38 @@ namespace Dispatcher
                         switch (cmd)
                         {
                             case "!who":        //к кому я подключился?
-                                netStream.WriteLine("dispatcher");
+                                lock (tcpclient)
+                                {
+                                    netStream.WriteLine("dispatcher");
+                                }
                                 break;
                             case "!register":   //зарегистрируй меня
                                 if (AddServer(parameters[1], parameters[2], Convert.ToInt32(parameters[3])))
-                                    netStream.WriteLine("registered");
+                                {
+                                    lock (tcpclient)
+                                    {
+                                        netStream.WriteLine("registered");
+                                    }
+                                }
                                 else
-                                    netStream.WriteLine("notregistered");
+                                {
+                                    lock (tcpclient)
+                                    {
+                                        netStream.WriteLine("notregistered");
+                                    }
+                                }
                                 break;
                             case "!getserverlist":  //дай мне список серверв сообщений
-                                SendServerList(ns);
+                                lock (tcpclient)
+                                {
+                                    SendServerList(ns);
+                                }
                                 break;
                             case "!getclientlist":  //дай мне список клиентов
-                                SendClientList(ns);
+                                lock (tcpclient)
+                                {
+                                    SendClientList(ns);
+                                }
                                 break;
                             case "!clientregistered":   //появился новый клиент
                                 if( RegisterClient(param))
@@ -202,23 +233,29 @@ namespace Dispatcher
                                 SendTextToAllServers(line);
                                 break;
                             case "!getfilelist":
-                                SendFileList(ns);
+                                lock (tcpclient)
+                                {
+                                    SendFileList(ns);
+                                }
                                 break;
                             case "!getfreefileserver":
-                                if (FileServers.Count > 0)
+                                lock (tcpclient)
                                 {
-                                    ServerInfo fileServ;
-                                    lock (FileServers)
+                                    if (FileServers.Count > 0)
                                     {
-                                        Random r = new Random();
-                                        int i = r.Next(0, FileServers.Count - 1);
-                                        fileServ = FileServers[i];
+                                        ServerInfo fileServ;
+                                        lock (FileServers)
+                                        {
+                                            Random r = new Random();
+                                            int i = r.Next(0, FileServers.Count - 1);
+                                            fileServ = FileServers[i];
+                                        }
+                                        netStream.WriteLine(String.Format("{0} {1}", fileServ.Ip, fileServ.Port));
                                     }
-                                    netStream.WriteLine(String.Format("{0} {1}", fileServ.Ip, fileServ.Port));
-                                }
-                                else
-                                {
-                                    netStream.WriteLine("error");
+                                    else
+                                    {
+                                        netStream.WriteLine("error");
+                                    }
                                 }
                                 break;
                             case "!getfileserver":
@@ -233,6 +270,7 @@ namespace Dispatcher
                     catch (IOException ioex)
                     {
                         tbLog.Text += Environment.NewLine + ioex.Message;
+                        System.Diagnostics.Debug.WriteLine("Dispatcher :" + ioex.Message);
                     }
                 }
             }
@@ -246,34 +284,44 @@ namespace Dispatcher
 
             if (type == "messageserver")
             {
-
-                MsgServers.Add(serverInfo);
-
+                lock (MsgServers)
+                {
+                    MsgServers.Add(serverInfo);
+                }
                 this.lbMsgServers.DataSource = null;//отображаем в листбоксе
                 this.lbMsgServers.DataSource = MsgServers;
-
                 SendTextToAllServers(string.Format("!serverregistered {0} {1}",ip,port));
+
+                //TODO Запросить список клиентов
             }
             else
             {
-                FileServers.Add(serverInfo);
+                lock (FileServers)
+                {
+                    FileServers.Add(serverInfo);
+                }
                 lbFileServers.DataSource = null;
                 lbFileServers.DataSource = FileServers;
+
+                //TODO Запросить список файлов
             }
 
             return true;
         }
 
-//наверное надо поставить блокировки на коллекции
+
         void SendServerList(Stream stream)
         {
             NetStreamReaderWriter ns = new NetStreamReaderWriter(stream);
             string line = "";
-            for(int i=0;i<MsgServers.Count;i++)
-            {
-                line += MsgServers[i].Ip + " " + MsgServers[i].Port.ToString();
-                if (i != MsgServers.Count - 1)
-                    line += "|";
+            lock (MsgServers)
+            {    
+                for (int i = 0; i < MsgServers.Count; i++)
+                {
+                    line += MsgServers[i].Ip + " " + MsgServers[i].Port.ToString();
+                    if (i != MsgServers.Count - 1)
+                        line += "|";
+                }
             }
             ns.WriteLine(line);
         }
@@ -281,11 +329,14 @@ namespace Dispatcher
         {
             NetStreamReaderWriter ns = new NetStreamReaderWriter(stream);
             string line = "";
-            for (int i = 0; i < Clients.Count; i++)
+            lock (Clients)
             {
-                line += Clients[i].ClientName;
-                if (i != Clients.Count - 1)
-                    line += "|";
+                for (int i = 0; i < Clients.Count; i++)
+                {
+                    line += Clients[i].ClientName;
+                    if (i != Clients.Count - 1)
+                        line += "|";
+                }
             }
             ns.WriteLine(line);
         }
@@ -335,14 +386,17 @@ namespace Dispatcher
         }
         void UnregisterClient(string name)
         {
-            for (int i = 0; i < Clients.Count; i++)
+            lock (Clients)
             {
-                if (Clients[i].ClientName == name)
+                for (int i = 0; i < Clients.Count; i++)
                 {
-                    Clients.RemoveAt(i);
-                    lbClients.DataSource = null;
-                    lbClients.DataSource = Clients;
-                    break;
+                    if (Clients[i].ClientName == name)
+                    {
+                        Clients.RemoveAt(i);
+                        lbClients.DataSource = null;
+                        lbClients.DataSource = Clients;
+                        break;
+                    }
                 }
             }
         }
@@ -350,14 +404,14 @@ namespace Dispatcher
         void broadcastSelfInfo()
         {
             Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            IPAddress broadcast = IPAddress.Parse("192.127.150.255");
+            IPAddress broadcast = IPAddress.Parse("192.127.150.255");//???????????????????????????????????????????????????????????????????????????????????????
            // IPHostEntry host=Dns.GetHostByName(Dns.GetHostName());
             byte[] sendbuf = Encoding.ASCII.GetBytes(Dns.GetHostName());
             IPEndPoint ep = new IPEndPoint(broadcast, 11000);
             while (Running)
             {
                 s.SendTo(sendbuf, ep);
-                Thread.Sleep(500);
+                Thread.Sleep(1000);
             }
             
         }
