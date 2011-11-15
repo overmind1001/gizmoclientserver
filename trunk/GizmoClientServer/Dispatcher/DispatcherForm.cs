@@ -64,32 +64,94 @@ namespace Dispatcher
                         }
                     }
                 }
-                //TODO добавить проверку файл серверов
+                
+
                 foreach (ServerInfo s in unregisteredServers)
                 {
                     unregisterServer(s.Ip, s.Port);
                     //SendTextToAllServers(String.Format( "!serverunregistered {0} {1}",s.Ip,s.Port));
                 }
 
+                List<ServerInfo> unregisteredFileServers = new List<ServerInfo>();
+                lock (FileServers)
+                {
+                    unregisteredFileServers.Clear();
+                    foreach (ServerInfo s in FileServers)
+                    {
+                        if (s.tcpClient.Connected == false)//сервер отключен
+                        {
+                            unregisteredFileServers.Add(s);
+                        }
+                    }
+                }
+
+                foreach (ServerInfo s in unregisteredFileServers)
+                {
+                    unregisterFileServer(s.Ip, s.Port);
+                }
                 Thread.Sleep(1000);
             }
         }
+        void unregisterFileServer(string ip, int port)
+        {
+            lock (FileServers)
+            {
+                for (int i = 0; i < FileServers.Count; i++)
+                {
+                    if (FileServers[i].Ip == ip && FileServers[i].Port == port)//нашли файлсервер
+                    {
+                        ServerInfo fileServer = FileServers[i];
+                        lock (Files)//удаляем файлы этого файл серера
+                        {
+                            List<FileInfo> filesToDelete = new List<FileInfo>();
+                            foreach (FileInfo f in fileServer.fileInfos)
+                            {
+                                filesToDelete.Add(f);
+                                SendTextToAllServers(String.Format("!deletefile {0}", f.Filename));
+                            }
+                            foreach (FileInfo f in filesToDelete)//удаляем из коллекции
+                            {
+                                Files.Remove(f);
+                            }
+                            lbFiles.DataSource = null;
+                            lbFiles.DataSource = Files;
+                        }
+                        FileServers.RemoveAt(i);        //удаляем из коллекции. Сообщать никому не надо.
+                        lbFileServers.DataSource = null;
+                        lbFileServers.DataSource = MsgServers;
+                        break;
+                    }
+                } 
+            }
+        }
         void unregisterServer(string ip, int port)
-        {//TODO Сообщить другим серверам о том, что клиенты или файлы данного сервера стали недоступны!!!
+        {
             lock (MsgServers)
             {
                 for (int i = 0; i < MsgServers.Count; i++)
                 {
                     if (MsgServers[i].Ip == ip && MsgServers[i].Port == port)
                     {
+                        ServerInfo msgServer = MsgServers[i];
                         MsgServers.RemoveAt(i);
                         lbMsgServers.DataSource = null;
                         lbMsgServers.DataSource = MsgServers;
-
                         SendServerUnregistered(ip, port);
+                        unregisterClientsOfServer(msgServer);
                         break;
                     }
                 }
+            }
+        }
+        void unregisterClientsOfServer(ServerInfo serv)
+        {
+            foreach (ClientInfo c in serv.clientInfos)
+            {
+                lock (Clients)
+                {
+                    Clients.Remove(c);
+                }
+                SendTextToAllServers(String.Format("!clienturegistered {0}",c.ClientName));
             }
         }
         void SendServerUnregistered(string ip, int port)
@@ -121,7 +183,7 @@ namespace Dispatcher
                 
                 while (tcpClient.Connected)
                 {
-                    //TODO Взаимодействие с клиентами
+                    
                     try
                     {
                         cmd = sr.ReadLine();
@@ -180,7 +242,7 @@ namespace Dispatcher
 
                 while (tcpClient.Connected)
                 {
-                    //TODO Взаимодействие с серверами
+                    
                     try
                     {
                         line = netStream.ReadLine();
@@ -203,6 +265,8 @@ namespace Dispatcher
                                     {
                                         netStream.WriteLine("registered");
                                     }
+                                    //TODO
+                                    //getClientListFromServer(netStream);
                                 }
                                 else
                                 {
@@ -308,8 +372,6 @@ namespace Dispatcher
 
             return true;
         }
-
-
         void SendServerList(Stream stream)
         {
             NetStreamReaderWriter ns = new NetStreamReaderWriter(stream);
@@ -353,13 +415,16 @@ namespace Dispatcher
             ns.WriteLine(line);
         }
         void SendTextToAllServers(string line)
-        {//блокировки?
+        {
             for (int i = 0; i < MsgServers.Count;i++ )
             {
                 try
                 {
-                    NetStreamReaderWriter ns = new NetStreamReaderWriter(MsgServers[i].tcpClient.GetStream());
-                    ns.WriteLine(line);
+                    lock (MsgServers[i].tcpClient)
+                    {
+                        NetStreamReaderWriter ns = new NetStreamReaderWriter(MsgServers[i].tcpClient.GetStream());
+                        ns.WriteLine(line);
+                    }
                 }
                 catch(IOException ioex)
                 {
@@ -369,7 +434,7 @@ namespace Dispatcher
             }
         }
         bool RegisterClient(string name)
-        {//блокировки??
+        {
             ClientInfo exsisting = Clients.Find((x) => {return x.ClientName == name; });
             if (exsisting != null)
                 return false;
@@ -377,11 +442,12 @@ namespace Dispatcher
             ClientInfo newClient = new ClientInfo();
             newClient.ClientName = name;
 
-            Clients.Add(newClient);
-
-            lbClients.DataSource = null;
-            lbClients.DataSource = Clients;
-
+            lock (Clients)
+            {
+                Clients.Add(newClient);
+                lbClients.DataSource = null;
+                lbClients.DataSource = Clients;
+            }
             return true;
         }
         void UnregisterClient(string name)
@@ -404,8 +470,14 @@ namespace Dispatcher
         void broadcastSelfInfo()
         {
             Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            IPAddress broadcast = IPAddress.Parse("192.127.150.255");//???????????????????????????????????????????????????????????????????????????????????????
-           // IPHostEntry host=Dns.GetHostByName(Dns.GetHostName());
+            //IPAddress broadcast = IPAddress.Parse("192.127.150.255");
+            IPHostEntry host=Dns.GetHostByName(Dns.GetHostName());
+            IPAddress broadcast =  host.AddressList[0];
+
+            IPAddress tail = IPAddress.Parse("0.0.0.255");
+
+            broadcast.Address = broadcast.Address | tail.Address;
+            
             byte[] sendbuf = Encoding.ASCII.GetBytes(Dns.GetHostName());
             IPEndPoint ep = new IPEndPoint(broadcast, 11000);
             while (Running)
