@@ -149,11 +149,16 @@ namespace MsgServer
             lock (сlientList)
             {
                 сlientList.Add(client);
-                client.SendTextToAll += SendTextToAll;
-                client.GetClientList += GetClientList;
-                client.GetFileList += GetFileList;
-                client.GetFileServer += GetFileServer;
-                client.GetFreeFileServer += GetFreeFileServer;
+
+                // Подписываемся на события клиента
+                client.SendTextToAll        += SendTextToAll;
+                client.GetClientList        += GetClientList;
+                client.GetFileList          += GetFileList;
+                client.GetFileServer        += GetFileServer;
+                client.GetFreeFileServer    += GetFreeFileServer;
+                client.IsContaind           += IsContained;
+                client.WriteLog             += WriteLog;
+
                 client.StartServe();
             }
         }
@@ -186,12 +191,7 @@ namespace MsgServer
                     сlientList[i].SendText(name, text);
                 }
             }
-
-            lock (lstLog)
-            {
-                lstLog.Items.Add(" > " + name + ": " + text);
-            }
-
+            WriteLog(" > " + name + ": " + text);
             return true;
         }
 
@@ -235,9 +235,41 @@ namespace MsgServer
             return "";
         }
 
+
+        /// <summary>
+        /// Возвращает имя свободного файлового сервера
+        /// </summary>
+        /// <returns></returns>
         private string GetFreeFileServer()
         {
             return "";
+        }
+
+        /// <summary>
+        /// Проверяет на наличие в списке клиентов клиента, зарегистрированного по данному имени
+        /// </summary>
+        /// <param name="name">проверяемое имя</param>
+        /// <returns>true - клиент с таким именем уже зарегистрирован</returns>
+        private bool IsContained(string name)
+        {
+            lock (сlientList)
+            {
+                for (int i = 0; i < сlientList.Count; i++)
+                {
+                    if (сlientList[i].GetName() == name && сlientList[i].IsRegister())
+                        return true;
+                }
+            }
+            return false;
+        }
+
+
+        private void WriteLog(string text)
+        {
+            lock (lstLog)
+            {
+                lstLog.Items.Add(text);
+            }
         }
 
         //////////////////////////////////////////////////////////////////////

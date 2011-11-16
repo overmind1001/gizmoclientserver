@@ -50,6 +50,14 @@ namespace MsgServer
         public delegate string GetFreeFileServerHandler();
         public event GetFreeFileServerHandler GetFreeFileServer;
 
+        // Для запроса наличия клиента с заданным именем в списке клиентов
+        public delegate bool IsContainedHandler(string name);
+        public event IsContainedHandler IsContaind;
+
+        // Для записи в лог
+        public delegate void WriteLogHandler(string text);
+        public event WriteLogHandler WriteLog;
+
         ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -65,6 +73,7 @@ namespace MsgServer
                 m_State = ClientState.Connected;
 
             m_Reg = RegistrationState.Unregister; // Вначале клиент незарегистрирован
+            m_Name = "unknown";
 
             m_StreamRW = new NetStreamReaderWriter(m_Tcp.GetStream()); // Создаем читателя-писателя
         }
@@ -100,12 +109,14 @@ namespace MsgServer
         /// <param name="name">имя клиента</param>
         private bool Registry(string name)
         {
-            m_Name = name;
-            m_Reg = RegistrationState.Register;
-
-            // Тут нужно наверное сделать какую то проверку на совпадение имен (или идентификаторов) 
-
-            return true;
+            if (!IsContaind(name))
+            {
+                m_Name = name;
+                m_Reg = RegistrationState.Register;
+                return true;
+            }
+            else
+                return false;
         }
 
 
@@ -168,14 +179,14 @@ namespace MsgServer
                 // Обработка команд
                 switch (cmd)
                 {
-                    // кто
+                    // Кто
                     case "!who":
                         {
                             SendText("messageserver");
                         }
                         break;
 
-                    // регистрация этого клиента
+                    // Регистрация этого клиента
                     case "!register":
                         {
                             if (Registry(param))
@@ -185,14 +196,14 @@ namespace MsgServer
                         }
                         break;
 
-                    // сообщение всем от этого клиента
+                    // Сообщение всем от этого клиента
                     case "!message":
                         {
                             bool ret = SendTextToAll(m_Name, param);
                         }
                         break;
                     
-                    // запрос списка контактов
+                    // Запрос списка контактов
                     case "!getclientlist":
                         {
                             string ClientList = GetClientList();
@@ -200,7 +211,7 @@ namespace MsgServer
                         }
                         break;
 
-                    // запрос списка файлов
+                    // Запрос списка файлов
                     case "!getfilelist":
                         {
                             string FileList = GetFileList();
@@ -208,7 +219,7 @@ namespace MsgServer
                         }
                         break;
 
-                    // запрос свободного файлового сервера для закачки
+                    // Запрос свободного файлового сервера для закачки
                     case "!getfreefileserver":
                         {
                             string FreeFileServer = GetFreeFileServer();
@@ -216,7 +227,7 @@ namespace MsgServer
                         }
                         break;
 
-                    // запрос файлового сервера для скачки
+                    // Запрос файлового сервера для скачки
                     case "!getfileserver":
                         {
                             string FileServer = GetFileServer(param);
@@ -227,8 +238,8 @@ namespace MsgServer
                     default:
                         {
                             SendText("!unknowncmd");
-                            MessageBox.Show("Неизвестная команда от пользователя " + m_Name
-                                             + "\nТекст команды: " + line, "Внимание");
+                            WriteLog("от клиента " + m_Name + " поступила команда '" + line +
+                                "'. Такая команда не известна серверу");
                         }
                         break;
                 }
