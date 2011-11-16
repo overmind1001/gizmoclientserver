@@ -226,125 +226,126 @@ namespace Dispatcher
             while (Running)
             {
                 TcpClient client = serverTcpListener.AcceptTcpClient();
-                ThreadPool.QueueUserWorkItem(DoCommunicateWithsServer, client);
+                ThreadPool.QueueUserWorkItem(DoCommunicateWithsServer_V2, client);
             }
         }
-        void DoCommunicateWithsServer(object tcpclient)
-        {
-            using (TcpClient tcpClient = (TcpClient)tcpclient)
-            using (NetworkStream ns = tcpClient.GetStream())
-            {
-                NetStreamReaderWriter netStream = new NetStreamReaderWriter(ns);
-                string []parameters;
-                string cmd;
-                string line;
-                string param;       //если параметр 1
+        //void DoCommunicateWithsServer(object tcpclient)
+        //{
+        //    using (TcpClient tcpClient = (TcpClient)tcpclient)
+        //    using (NetworkStream ns = tcpClient.GetStream())
+        //    {
+        //        NetStreamReaderWriter netStream = new NetStreamReaderWriter(ns);
+        //        string []parameters;
+        //        string cmd;
+        //        string line;
+        //        string param;       //если параметр 1
 
-                while (tcpClient.Connected)
-                {
+        //        while (tcpClient.Connected)
+        //        {
                     
-                    try
-                    {
-                        line = netStream.ReadLine();
-                        parameters = line.Split(new char[] { ' ' });
-                        cmd = parameters[0];
-                        param = line.Substring(cmd.Length);
+        //            try
+        //            {
+        //                line = netStream.ReadLine();
+        //                parameters = line.Split(new char[] { ' ' });
+        //                cmd = parameters[0];
+        //                param = line.Substring(cmd.Length);
 
-                        switch (cmd)
-                        {
-                            case "!who":        //к кому я подключился?
-                                lock (tcpclient)
-                                {
-                                    netStream.WriteLine("dispatcher");
-                                }
-                                break;
-                            case "!register":   //зарегистрируй меня
-                                if (AddServer(parameters[1], parameters[2], Convert.ToInt32(parameters[3])))
-                                {
-                                    lock (tcpclient)
-                                    {
-                                        netStream.WriteLine("registered");
-                                    }
-                                    //TODO
-                                    //getClientListFromServer(netStream);
-                                }
-                                else
-                                {
-                                    lock (tcpclient)
-                                    {
-                                        netStream.WriteLine("notregistered");
-                                    }
-                                }
-                                break;
-                            case "!getserverlist":  //дай мне список серверв сообщений
-                                lock (tcpclient)
-                                {
-                                    SendServerList(ns);
-                                }
-                                break;
-                            case "!getclientlist":  //дай мне список клиентов
-                                lock (tcpclient)
-                                {
-                                    SendClientList(ns);
-                                }
-                                break;
-                            case "!clientregistered":   //появился новый клиент
-                                if( RegisterClient(param))
-                                    SendTextToAllServers(line);
-                                break;
-                            case "!clientunregistered":
-                                UnregisterClient(param);
-                                SendTextToAllServers(line);
-                                break;
-                            case "!getfilelist":
-                                lock (tcpclient)
-                                {
-                                    SendFileList(ns);
-                                }
-                                break;
-                            case "!getfreefileserver":
-                                lock (tcpclient)
-                                {
-                                    if (FileServers.Count > 0)
-                                    {
-                                        ServerInfo fileServ;
-                                        lock (FileServers)
-                                        {
-                                            Random r = new Random();
-                                            int i = r.Next(0, FileServers.Count - 1);
-                                            fileServ = FileServers[i];
-                                        }
-                                        netStream.WriteLine(String.Format("{0} {1}", fileServ.Ip, fileServ.Port));
-                                    }
-                                    else
-                                    {
-                                        netStream.WriteLine("error");
-                                    }
-                                }
-                                break;
-                            case "!getfileserver":
-                                //////////////////////////////////////TODO
-                                break;
+        //                switch (cmd)
+        //                {
+        //                    case "!who":        //к кому я подключился?
+        //                        lock (tcpclient)
+        //                        {
+        //                            netStream.WriteLine("dispatcher");
+        //                        }
+        //                        break;
+        //                    case "!register":   //зарегистрируй меня
+        //                        if (AddServer(parameters[1], parameters[2], Convert.ToInt32(parameters[3])))
+        //                        {
+        //                            lock (tcpclient)
+        //                            {
+        //                                netStream.WriteLine("registered");
+        //                            }
+        //                            //TODO
+        //                            //getClientListFromServer(netStream);
+        //                        }
+        //                        else
+        //                        {
+        //                            lock (tcpclient)
+        //                            {
+        //                                netStream.WriteLine("notregistered");
+        //                            }
+        //                        }
+        //                        break;
+        //                    case "!getserverlist":  //дай мне список серверв сообщений
+        //                        lock (tcpclient)
+        //                        {
+        //                            SendServerList(ns);
+        //                        }
+        //                        break;
+        //                    case "!getclientlist":  //дай мне список клиентов
+        //                        lock (tcpclient)
+        //                        {
+        //                            SendClientList(ns);
+        //                        }
+        //                        break;
+        //                    case "!clientregistered":   //появился новый клиент
+        //                        if( RegisterClient(param))
+        //                            SendTextToAllServers(line);
+        //                        break;
+        //                    case "!clientunregistered":
+        //                        UnregisterClient(param);
+        //                        SendTextToAllServers(line);
+        //                        break;
+        //                    case "!getfilelist":
+        //                        lock (tcpclient)
+        //                        {
+        //                            SendFileList(ns);
+        //                        }
+        //                        break;
+        //                    case "!getfreefileserver":
+        //                        lock (tcpclient)
+        //                        {
+        //                            if (FileServers.Count > 0)
+        //                            {
+        //                                ServerInfo fileServ;
+        //                                lock (FileServers)
+        //                                {
+        //                                    Random r = new Random();
+        //                                    int i = r.Next(0, FileServers.Count - 1);
+        //                                    fileServ = FileServers[i];
+        //                                }
+        //                                netStream.WriteLine(String.Format("{0} {1}", fileServ.Ip, fileServ.Port));
+        //                            }
+        //                            else
+        //                            {
+        //                                netStream.WriteLine("error");
+        //                            }
+        //                        }
+        //                        break;
+        //                    case "!getfileserver":
+        //                        //////////////////////////////////////TODO
+        //                        break;
 
-                            default:
-                                MessageBox.Show("Dispatcher: Неизвестная команда. "+line);
-                                break;
-                        }
-                    }
-                    catch (IOException ioex)
-                    {
-                        tbLog.Text += Environment.NewLine + ioex.Message;
-                        System.Diagnostics.Debug.WriteLine("Dispatcher :" + ioex.Message);
-                    }
-                }
-            }
-        }
+        //                    default:
+        //                        MessageBox.Show("Dispatcher: Неизвестная команда. "+line);
+        //                        break;
+        //                }
+        //            }
+        //            catch (IOException ioex)
+        //            {
+        //                tbLog.Text += Environment.NewLine + ioex.Message;
+        //                System.Diagnostics.Debug.WriteLine("Dispatcher :" + ioex.Message);
+        //            }
+        //        }
+        //    }
+        //}
 
         void DoCommunicateWithsServer_V2(object tcpclient)
         {
             using (TcpClient tcpClient = (TcpClient)tcpclient)
             using (NetworkStream ns = tcpClient.GetStream())
             {
+                ServerInfo serverInfo=null;
                 NetStreamReaderWriter netStream = new NetStreamReaderWriter(ns);
                 string[] parameters;
                 string cmd;
@@ -360,16 +361,25 @@ namespace Dispatcher
                         {
                             Thread.Sleep(200);
                         }
-                        string beginTransaction = netStream.ReadLine();
-                        if (beginTransaction != "!begintransaction")//игнорируем все кроме начала транзакции
-                            continue;
-                        //lock(tcpclient)//блокируем канал
+                        
                         
                         line = netStream.ReadLine();
                         parameters = line.Split(new char[] { ' ' });
                         cmd = parameters[0];
                         param = line.Substring(cmd.Length);
 
+                        if (line == "!beginlockrequest")
+                        {
+                            if (serverInfo != null)
+                                serverInfo.channelLock.BeginLockAccept();
+                        }
+                        else if (line == "!endlock")
+                        {
+                            if (serverInfo != null)
+                                serverInfo.channelLock.EndLockAccept();
+                        }
+
+                        //обработка команд - входящая блокировка.
                         switch (cmd)
                         {
                             case "!who":        //к кому я подключился?
@@ -379,14 +389,18 @@ namespace Dispatcher
                                 }
                                 break;
                             case "!register":   //зарегистрируй меня
-                                if (AddServer(parameters[1], parameters[2], Convert.ToInt32(parameters[3])))
+                                if (AddServer(parameters[1], parameters[2], Convert.ToInt32(parameters[3]),out serverInfo))
                                 {
                                     lock (tcpclient)
                                     {
                                         netStream.WriteLine("registered");
                                     }
+                                    //загрузка клиент-листа
+                                    serverInfo.channelLock.Begin();
+                                    //beginLock
                                     //TODO
                                     //getClientListFromServer(netStream);
+                                    serverInfo.channelLock.End();
                                 }
                                 else
                                 {
@@ -459,10 +473,11 @@ namespace Dispatcher
                 }
             }
         }
-        bool AddServer(string type, string ip, int port)
+        bool AddServer(string type, string ip, int port,out ServerInfo serv)
         {
             string serverRecord = type+"_"+ip.ToString()+"_"+port;
             ServerInfo serverInfo = new ServerInfo();
+            serv = serverInfo;
             serverInfo.Ip = ip;
             serverInfo.Port = port;
 
