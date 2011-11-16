@@ -64,9 +64,9 @@
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1,
             this.lblStatus});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 363);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 373);
             this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(578, 22);
+            this.statusStrip1.Size = new System.Drawing.Size(555, 22);
             this.statusStrip1.TabIndex = 0;
             this.statusStrip1.Text = "statusStrip1";
             // 
@@ -88,7 +88,7 @@
             this.серверToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(578, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(555, 24);
             this.menuStrip1.TabIndex = 1;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -123,7 +123,7 @@
             this.tabControl1.Location = new System.Drawing.Point(0, 24);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(578, 339);
+            this.tabControl1.Size = new System.Drawing.Size(555, 349);
             this.tabControl1.TabIndex = 2;
             // 
             // tabPage1
@@ -132,7 +132,7 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(570, 313);
+            this.tabPage1.Size = new System.Drawing.Size(547, 323);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Состояние";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -148,7 +148,7 @@
             this.tableLayoutPanel1.RowCount = 2;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(564, 307);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(541, 317);
             this.tableLayoutPanel1.TabIndex = 3;
             // 
             // splitContainer1
@@ -166,7 +166,7 @@
             // 
             this.splitContainer1.Panel2.Controls.Add(this.groupBox2);
             this.splitContainer1.Panel2MinSize = 100;
-            this.splitContainer1.Size = new System.Drawing.Size(558, 301);
+            this.splitContainer1.Size = new System.Drawing.Size(535, 311);
             this.splitContainer1.SplitterDistance = 229;
             this.splitContainer1.TabIndex = 0;
             // 
@@ -176,7 +176,7 @@
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox1.Location = new System.Drawing.Point(0, 0);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(229, 301);
+            this.groupBox1.Size = new System.Drawing.Size(229, 311);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Клиенты";
@@ -187,7 +187,7 @@
             this.lstClients.FormattingEnabled = true;
             this.lstClients.Location = new System.Drawing.Point(3, 16);
             this.lstClients.Name = "lstClients";
-            this.lstClients.Size = new System.Drawing.Size(223, 282);
+            this.lstClients.Size = new System.Drawing.Size(223, 292);
             this.lstClients.TabIndex = 2;
             // 
             // groupBox2
@@ -196,7 +196,7 @@
             this.groupBox2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox2.Location = new System.Drawing.Point(0, 0);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(325, 301);
+            this.groupBox2.Size = new System.Drawing.Size(302, 311);
             this.groupBox2.TabIndex = 0;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Серверы";
@@ -207,7 +207,7 @@
             this.lstServers.FormattingEnabled = true;
             this.lstServers.Location = new System.Drawing.Point(3, 16);
             this.lstServers.Name = "lstServers";
-            this.lstServers.Size = new System.Drawing.Size(319, 282);
+            this.lstServers.Size = new System.Drawing.Size(296, 292);
             this.lstServers.TabIndex = 0;
             // 
             // tabPage2
@@ -234,7 +234,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(578, 385);
+            this.ClientSize = new System.Drawing.Size(555, 395);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.menuStrip1);
