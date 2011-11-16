@@ -22,7 +22,7 @@ namespace Dispatcher
         /// Метод вызывается перед началом(инициацией) любого взаимодействия с другой стороной. Если канал занят, то ожидание. Если сбой, то возвращает false.
         /// </summary>
         /// <returns>false если не удалось начать транзакцию(если другая сторона в этот момент тоже пытается занять канал, либо не отвечает)</returns>
-        bool Begin()    
+        public bool Begin()    
         {
             string ans = "";
             mutex.WaitOne();
@@ -46,7 +46,7 @@ namespace Dispatcher
         /// <summary>
         /// Вызывается по окончании взаимодействия с другой стороной. Освобождает канал.
         /// </summary>
-        void End()
+        public void End()
         {
             netStream.WriteLine("!endlock");
             mutex.ReleaseMutex();
@@ -55,7 +55,7 @@ namespace Dispatcher
         /// Вызывается для подтверждения запроса о начале блокировки канала. И блокирует канал со 2 стороны в случае удачи.
         /// </summary>
         /// <returns>true если удалось подтвердить</returns>
-        bool Accept()
+        public bool BeginLockAccept()
         {
             if (!mutex.WaitOne(0))
                 return false;
@@ -64,6 +64,13 @@ namespace Dispatcher
                 netStream.WriteLine("!lockaccepted");
                 return true;
             }
+        }
+        /// <summary>
+        /// Для разблокировки тсп-канала 2 стороной.
+        /// </summary>
+        public void EndLockAccept()
+        {
+            mutex.ReleaseMutex();
         }
     }
 }
