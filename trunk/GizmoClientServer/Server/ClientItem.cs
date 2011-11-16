@@ -27,9 +27,37 @@ namespace MsgServer
 
         private NetStreamReaderWriter m_StreamRW;                   // Читатель-писатель потока
 
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // События и делегаты
+
+        // Для отсылки текстового сообщения другим клиентам
+        public delegate bool SendTextToAllHandler(string name, string text);
+        public event SendTextToAllHandler SendTextToAll; 
+
+        // Для запроса списка клиентов
+        public delegate string GetClientListHandler();
+        public event GetClientListHandler GetClientList;
+
+        // Для запроса списка файлов
+        public delegate string GetFileListHandler();
+        public event GetFileListHandler GetFileList;
+
+        // Для запроса файлового сервера, на котором хранится файл
+        public delegate string GetFileServerHandler(string name);
+        public event GetFileServerHandler GetFileServer;
+
+        // Для запроса свободного файлового сервера
+        public delegate string GetFreeFileServerHandler();
+        public event GetFreeFileServerHandler GetFreeFileServer;
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
+        /// <summary>
+        /// Констурктор класса клиента
+        /// </summary>
+        /// <param name="tcp">tcp - соединение</param>
         public ClientItem(TcpClient tcp)
         {
             m_Tcp = tcp;
@@ -45,7 +73,26 @@ namespace MsgServer
             m_ServeThread.Abort();
         }
 
+        /// <summary>
+        /// Возвращает имя клиента
+        /// </summary>
+        /// <returns>строка имени</returns>
+        public string GetName()
+        {
+            return m_Name;
+        }
 
+        /// <summary>
+        /// Зарегистрирован ли клиент
+        /// </summary>
+        /// <returns>true - да</returns>
+        public bool IsRegister()
+        {
+            if (m_Reg == RegistrationState.Register)
+                return true;
+            else
+                return false;
+        }
 
         /// <summary>
         /// Регистрация клиента на сервере
@@ -71,12 +118,6 @@ namespace MsgServer
         /// <param name="text">текст сообщения</param>
         public void SendText(string name, string text)
         {
-            //  Тут необходимо определиться как идентифицировать клиентов. 
-            //    По именам или идентификаторам. И есть ли возможность повторения имен.
-
-            if (m_Name == name)
-                return;
-
             m_StreamRW.WriteLine("!message " + name + ":" + text);
         }
 
@@ -89,49 +130,6 @@ namespace MsgServer
         {
             m_StreamRW.WriteLine(text);
         }
-
-
-        /// <summary>
-        /// Послать текстовое сообщение другим клиентам
-        /// </summary>
-        /// <param name="text">текст сообщения</param>
-        private void SendTextToAll(string text)
-        {
-        }
-
-
-
-        // Запросы
-
-        /// <summary>
-        /// Дай мне список зарегистрированных клиентов
-        /// </summary>
-        private void GetClientList()
-        {
-        }
-
-        /// <summary>
-        /// Дай мне список файлов
-        /// </summary>
-        private void GetFileList()
-        {
-        }
-
-        /// <summary>
-        /// Дай свободный файловый сервер, хочу залить
-        /// </summary>
-        private void GetFreeFileServer()
-        {
-        }
-
-        /// <summary>
-        /// Дай файловый сервер с нужным файлом, хочу скачать
-        /// </summary>
-        /// <param name="filename"></param>
-        private void GetFileServer(string filename)
-        {
-        }
-
 
 
         // Цикл обработки сообщений
@@ -190,35 +188,39 @@ namespace MsgServer
                     // сообщение всем от этого клиента
                     case "!message":
                         {
-                            SendTextToAll(param);
+                            bool ret = SendTextToAll(m_Name, param);
                         }
                         break;
                     
                     // запрос списка контактов
                     case "!getclientlist":
                         {
-                            GetClientList();
+                            string ClientList = GetClientList();
+                            SendText(ClientList);
                         }
                         break;
 
                     // запрос списка файлов
                     case "!getfilelist":
                         {
-                            GetFileList();
+                            string FileList = GetFileList();
+                            SendText(FileList);
                         }
                         break;
 
                     // запрос свободного файлового сервера для закачки
                     case "!getfreefileserver":
                         {
-                            GetFreeFileServer();
+                            string FreeFileServer = GetFreeFileServer();
+                            SendText(FreeFileServer);
                         }
                         break;
 
                     // запрос файлового сервера для скачки
                     case "!getfileserver":
                         {
-                            GetFileServer(param);
+                            string FileServer = GetFileServer(param);
+                            SendText(FileServer);
                         }
                         break;
 

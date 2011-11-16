@@ -54,7 +54,10 @@ namespace Client
             TcpClient tcpClient =(TcpClient) tcpCliento;
             NetworkStream ns = tcpClient.GetStream();
             StreamReader sr = new StreamReader(ns);
-            sr.BaseStream.ReadTimeout = 20000;//20 сек ждем, затем снова пытаемся читать
+
+            // Тут косяк. По истечению срока соединение закрывается. И при дальнейших попытках получить стрим, падение
+
+            //sr.BaseStream.ReadTimeout = 2000000;//20 сек ждем, затем снова пытаемся читать
             char[] sep = { ' ' };
             while (tcpClient.Connected)
             {
@@ -66,6 +69,9 @@ namespace Client
                     switch (splited[0])
                     {
                         case "!message"://прием сообщения
+
+                            // Тут косяки. Нельзя(!) работать с контролами из другого потока, Санек, сам же говорил))
+
                             string message = cmd.Substring(splited[0].Length);
                             this.tbChat.Text += message + Environment.NewLine;
                             break;
@@ -138,6 +144,7 @@ namespace Client
         private void getFileListFromServer(NetworkStream ns)
         {
             StreamWriter sw = new StreamWriter(ns);
+            sw.AutoFlush = true;
             sw.WriteLine("!getfilelist");         //посылка команды
 
             StreamReader sr = new StreamReader(ns);
@@ -156,6 +163,7 @@ namespace Client
         private string getFreeFileServer(NetworkStream ns)
         {
             StreamWriter sw = new StreamWriter(ns);
+            sw.AutoFlush = true;
             sw.WriteLine("!getfreefileserver");         //посылка команды
 
             StreamReader sr = new StreamReader(ns);
@@ -171,6 +179,7 @@ namespace Client
         private string getFileServer(NetworkStream ns,string file)
         {
             StreamWriter sw = new StreamWriter(ns);
+            sw.AutoFlush = true;
             sw.WriteLine("!getfileserver "+file);         //посылка команды
 
             StreamReader sr = new StreamReader(ns);
@@ -189,6 +198,7 @@ namespace Client
             TcpClient cl = new TcpClient(ip, port);
             NetworkStream ns = cl.GetStream();
             StreamWriter sw = new StreamWriter(ns);
+            sw.AutoFlush = true;
             sw.WriteLine("!uploadfile "+fileName+"10000");
 
             StreamReader sr = new StreamReader(ns);
@@ -223,6 +233,7 @@ namespace Client
             TcpClient cl = new TcpClient(ip, port);
             NetworkStream ns = cl.GetStream();
             StreamWriter sw = new StreamWriter(ns);
+            sw.AutoFlush = true;
             sw.WriteLine("!downloadfile " + fileName +" "+ nps.GetImpersonationUserName());
             sw.Close();
             ns.Close();
@@ -246,6 +257,7 @@ namespace Client
         private void sendMessage(NetworkStream ns,string mes)
         {
             StreamWriter sw = new StreamWriter(ns);
+            sw.AutoFlush = true;
             sw.WriteLine("!message " + mes);
         }
         private void btnSend_Click(object sender, EventArgs e)
@@ -255,8 +267,14 @@ namespace Client
 
             if (tbMessage.Text.Trim() == string.Empty)
                 return;
-            NetworkStream ns = tcpClient.GetStream();
-            sendMessage(ns, tbMessage.Text);
+            if (tcpClient.Connected != false)
+            {
+                NetworkStream ns = tcpClient.GetStream();
+                sendMessage(ns, tbMessage.Text);
+            }
+            else
+                MessageBox.Show("С какого то хера я отключился!");
+
         }
     }
 }

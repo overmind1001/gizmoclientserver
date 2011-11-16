@@ -146,8 +146,16 @@ namespace MsgServer
         private void AddClient(TcpClient tcp)
         {
             ClientItem client = new ClientItem(tcp);
-            сlientList.Add(client);
-            client.StartServe();
+            lock (сlientList)
+            {
+                сlientList.Add(client);
+                client.SendTextToAll += SendTextToAll;
+                client.GetClientList += GetClientList;
+                client.GetFileList += GetFileList;
+                client.GetFileServer += GetFileServer;
+                client.GetFreeFileServer += GetFreeFileServer;
+                client.StartServe();
+            }
         }
 
         /// <summary>
@@ -163,7 +171,74 @@ namespace MsgServer
             }
         }
 
+        /// <summary>
+        /// Послать текстовое сообщение всем клиентам
+        /// </summary>
+        /// <param name="name">имя отправителя</param>
+        /// <param name="text">текст сообщения</param>
+        /// <returns></returns>
+        private bool SendTextToAll(string name, string text)
+        {
+            lock (сlientList)
+            {
+                for (int i = 0; i < сlientList.Count; i++)
+                {
+                    сlientList[i].SendText(name, text);
+                }
+            }
 
+            lock (lstLog)
+            {
+                lstLog.Items.Add(" > " + name + ": " + text);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Возвращает список клиентов
+        /// </summary>
+        /// <returns></returns>
+        private string GetClientList()
+        {
+            string List = "";
+            lock (сlientList)
+            {
+                for (int i = 0; i < сlientList.Count; i++)
+                {
+                    if (!сlientList[i].IsRegister())
+                        continue;
+
+                    if (List != "") 
+                        List += "|";
+                    List += сlientList[i].GetName();
+                }
+            }
+            return List;
+        }
+
+        /// <summary>
+        /// Возвращает список файлов
+        /// </summary>
+        /// <returns>список файлов</returns>
+        private string GetFileList()
+        {
+            return "";
+        }
+
+        /// <summary>
+        /// Возвращет имя сервера, на котором содержится файл
+        /// </summary>
+        /// <returns>имя сервера</returns>
+        private string GetFileServer(string filename)
+        {
+            return "";
+        }
+
+        private string GetFreeFileServer()
+        {
+            return "";
+        }
 
         //////////////////////////////////////////////////////////////////////
         // Обработчики событий формы
