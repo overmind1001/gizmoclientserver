@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChannelLock.cs" />
     <Compile Include="ClientInfo.cs" />
     <Compile Include="DispatcherForm.cs">
       <SubType>Form</SubType>
