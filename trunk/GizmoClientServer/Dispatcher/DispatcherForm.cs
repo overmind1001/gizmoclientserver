@@ -14,8 +14,19 @@ using System.Diagnostics;
 
 namespace Dispatcher
 {
+    
+    
+
     public partial class DispatcherForm : Form
     {
+        //делегаты
+        public delegate void MyListChangedHandler();
+        public MyListChangedHandler MsgServerListChanged;
+        public MyListChangedHandler FileServerListChanged;
+        public MyListChangedHandler ClientsListChanged;
+        public MyListChangedHandler FilesListChanged;
+        
+
         List<ServerInfo> MsgServers;
         List<ServerInfo> FileServers;
         List<ClientInfo> Clients;
@@ -27,6 +38,10 @@ namespace Dispatcher
         public DispatcherForm()
         {
             InitializeComponent();
+            MsgServerListChanged += UpdateMsgServerList;
+            FileServerListChanged += UpdateFileServerList;
+            ClientsListChanged += UpdateClientsList;
+            FilesListChanged += UpdateFilesList;
 
             MsgServers = new List<ServerInfo>();
             FileServers = new List<ServerInfo>();
@@ -48,6 +63,8 @@ namespace Dispatcher
 
 
         }
+
+        
         void availableCheck()
         {
             List<ServerInfo> unregisteredServers = new List<ServerInfo>();
@@ -113,12 +130,10 @@ namespace Dispatcher
                             {
                                 Files.Remove(f);
                             }
-                            lbFiles.DataSource = null;
-                            lbFiles.DataSource = Files;
+                            FilesListChanged();
                         }
                         FileServers.RemoveAt(i);        //удаляем из коллекции. Сообщать никому не надо.
-                        lbFileServers.DataSource = null;
-                        lbFileServers.DataSource = MsgServers;
+                        FileServerListChanged();
                         break;
                     }
                 } 
@@ -134,8 +149,7 @@ namespace Dispatcher
                     {
                         ServerInfo msgServer = MsgServers[i];
                         MsgServers.RemoveAt(i);
-                        lbMsgServers.DataSource = null;
-                        lbMsgServers.DataSource = MsgServers;
+                        MsgServerListChanged();
                         SendServerUnregistered(ip, port);
                         unregisterClientsOfServer(msgServer);
                         break;
@@ -150,6 +164,7 @@ namespace Dispatcher
                 lock (Clients)
                 {
                     Clients.Remove(c);
+                    ClientsListChanged();
                 }
                 SendTextToAllServers(String.Format("!clienturegistered {0}",c.ClientName));
             }
@@ -159,6 +174,26 @@ namespace Dispatcher
             SendTextToAllServers(string.Format("!serverunregistered {0} {1}",ip,port));
         }
 
+        void UpdateMsgServerList()
+        {
+            lbMsgServers.DataSource = null;
+            lbMsgServers.DataSource = MsgServers;
+        }
+        void UpdateFileServerList()
+        {
+            lbFileServers.DataSource = null;
+            lbFileServers.DataSource = FileServers;
+        }
+        void UpdateClientsList()
+        {
+            lbClients.DataSource = null;
+            lbClients.DataSource = Clients;
+        }
+        void UpdateFilesList()
+        {
+            lbFiles.DataSource = null;
+            lbFiles.DataSource = Files;
+        }
         //взаимодействие с клиентами
         void clientTcpListenerProc()
         {
@@ -347,6 +382,7 @@ namespace Dispatcher
             {
                 ServerInfo serverInfo=null;
                 NetStreamReaderWriter netStream = new NetStreamReaderWriter(ns);
+                
                 string[] parameters;
                 string cmd;
                 string line;
@@ -368,18 +404,9 @@ namespace Dispatcher
                         cmd = parameters[0];
                         param = line.Substring(cmd.Length);
 
-                        if (line == "!beginlockrequest")
-                        {
-                            if (serverInfo != null)
-                                serverInfo.channelLock.BeginLockAccept();
-                        }
-                        else if (line == "!endlock")
-                        {
-                            if (serverInfo != null)
-                                serverInfo.channelLock.EndLockAccept();
-                        }
-
-                        //обработка команд - входящая блокировка.
+                   
+                        
+                       
                         switch (cmd)
                         {
                             case "!who":        //к кому я подключился?
@@ -396,11 +423,11 @@ namespace Dispatcher
                                         netStream.WriteLine("registered");
                                     }
                                     //загрузка клиент-листа
-                                    serverInfo.channelLock.Begin();
+                                    
                                     //beginLock
                                     //TODO
                                     //getClientListFromServer(netStream);
-                                    serverInfo.channelLock.End();
+                                    
                                 }
                                 else
                                 {
@@ -487,8 +514,7 @@ namespace Dispatcher
                 {
                     MsgServers.Add(serverInfo);
                 }
-                this.lbMsgServers.DataSource = null;//отображаем в листбоксе
-                this.lbMsgServers.DataSource = MsgServers;
+                MsgServerListChanged();//обновление списка серверов на форме
                 SendTextToAllServers(string.Format("!serverregistered {0} {1}",ip,port));
 
                 //TODO Запросить список клиентов
@@ -499,8 +525,8 @@ namespace Dispatcher
                 {
                     FileServers.Add(serverInfo);
                 }
-                lbFileServers.DataSource = null;
-                lbFileServers.DataSource = FileServers;
+                FileServerListChanged();//обновление списка файлов на сервере
+
 
                 //TODO Запросить список файлов
             }
@@ -570,18 +596,16 @@ namespace Dispatcher
         }
         bool RegisterClient(string name)
         {
-            ClientInfo exsisting = Clients.Find((x) => {return x.ClientName == name; });
-            if (exsisting != null)
-                return false;
-
-            ClientInfo newClient = new ClientInfo();
-            newClient.ClientName = name;
-
             lock (Clients)
             {
+                ClientInfo exsisting = Clients.Find((x) => {return x.ClientName == name; });
+                if (exsisting != null)
+                    return false;
+                ClientInfo newClient = new ClientInfo();
+                newClient.ClientName = name;
                 Clients.Add(newClient);
-                lbClients.DataSource = null;
-                lbClients.DataSource = Clients;
+                ClientsListChanged();//обновление списка клиентов на форме
+      
             }
             return true;
         }
@@ -594,8 +618,7 @@ namespace Dispatcher
                     if (Clients[i].ClientName == name)
                     {
                         Clients.RemoveAt(i);
-                        lbClients.DataSource = null;
-                        lbClients.DataSource = Clients;
+                        ClientsListChanged();//обновление списка клиентов на форме
                         break;
                     }
                 }
