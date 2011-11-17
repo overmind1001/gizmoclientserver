@@ -15,13 +15,63 @@ namespace Client
 {
     public partial class ClientForm : Form
     {
+        //делегаты
+        public delegate void WriteMesssageHandler(string mes);
+        public WriteMesssageHandler WriteMessageD;
+
+        public delegate void AddRemoveStringHandler(string str);
+        public AddRemoveStringHandler AddManD;
+        public AddRemoveStringHandler RemoveManD;
+        public AddRemoveStringHandler AddFileD;
+        public AddRemoveStringHandler RemoveFileD;
+
+        public delegate void ClearHandler();
+        public ClearHandler ClearPeopleD;
+        public ClearHandler ClearFilesD;
+
         TcpClient tcpClient;
 
         public ClientForm()
         {
             InitializeComponent();
-        }
 
+            WriteMessageD += WriteMessage;
+            AddManD += AddMan;
+            RemoveManD += RemoveMan;
+            AddFileD += AddFile;
+            RemoveFileD += RemoveFile;
+            ClearPeopleD += ClearPeople;
+            ClearFilesD += ClearFiles;
+        }
+        void WriteMessage(string message)
+        {
+            this.tbChat.Text += message + Environment.NewLine;
+        }
+        void AddMan(string man)
+        {
+            this.lbPeople.Items.Add(man);
+        }
+        void RemoveMan(string man)
+        {
+            this.lbPeople.Items.Remove(man);
+        }
+        void AddFile(string file)
+        {
+            lbFilesList.Items.Add(file);
+        }
+        void RemoveFile(string file)
+        {
+            lbFilesList.Items.Remove(file);
+        }
+        void ClearPeople()
+        {
+            lbPeople.Items.Clear();
+        }
+        void ClearFiles()
+        {
+            lbFilesList.Items.Clear();
+        }
+        
 
         private void ПодключитьсяtoolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -68,28 +118,25 @@ namespace Client
 
                     switch (splited[0])
                     {
-                        case "!message"://прием сообщения
-
-                            // Тут косяки. Нельзя(!) работать с контролами из другого потока, Санек, сам же говорил))
-
+                        case "!message"://прием сообщения                            
                             string message = cmd.Substring(splited[0].Length);
-                            this.tbChat.Text += message + Environment.NewLine;
+                            WriteMessageD(message);
                             break;
                         case "!clientregistered":
                             string cl = splited[1];
-                            this.lbPeople.Items.Add(cl);
+                            AddManD(cl);
                             break;
                         case "!clientunregistered":
                             cl = splited[1];
-                            this.lbPeople.Items.Remove(cl);
+                            RemoveManD(cl);
                             break;
                         case "!addfile":
                             string file = splited[1];
-                            lbFilesList.Items.Add(file);
+                            AddFileD(file);
                             break;
                         case "!deletefile":
                             file = splited[1];
-                            lbFilesList.Items.Remove(file);
+                            RemoveFileD(file);
                             break;
                         default:
                             MessageBox.Show("неизвестная команда!");
@@ -134,10 +181,10 @@ namespace Client
             char[] sep = { '|' };
             string[] names = answer.Split(sep);//получили массив имен
 
-            lbPeople.Items.Clear();
+            ClearPeopleD();
             foreach (String s in names)
             {
-                lbPeople.Items.Add(s);
+                AddManD(s);
             }
         }
         //получение файл листа
@@ -153,10 +200,10 @@ namespace Client
             char[] sep = { '|' };
             string[] files = answer.Split(sep);//получили массив имен
 
-            lbFilesList.Items.Clear();
+            ClearFilesD();
             foreach (String s in files)
             {
-                lbFilesList.Items.Add(s);
+                AddFileD(s);
             }
         }
         //получение адреса файл-сервера для заливки файла
