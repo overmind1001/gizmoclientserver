@@ -7,6 +7,9 @@ using System.IO;
 
 namespace Dispatcher
 {
+    /// <summary>
+    /// Пока класс не трогаем и не используем
+    /// </summary>
     class ChannelLock
     {
         Mutex mutex;
