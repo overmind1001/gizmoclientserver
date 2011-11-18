@@ -37,6 +37,8 @@ namespace Dispatcher
 
         public DispatcherForm()
         {
+            System.Diagnostics.Debug.AutoFlush = true;
+            System.Diagnostics.Debug.WriteLine("Dispatcher. Started");
             InitializeComponent();
             MsgServerListChanged += UpdateMsgServerList;
             FileServerListChanged += UpdateFileServerList;
@@ -331,7 +333,9 @@ namespace Dispatcher
                     }
                     catch (IOException ioex)
                     {
-                        tbLog.Text +=Environment.NewLine+ ioex.Message ;
+                        System.Diagnostics.Debug.AutoFlush = true;
+                        System.Diagnostics.Debug.WriteLine("Client. " + ioex.Message);
+                        //tbLog.Text +=Environment.NewLine+ ioex.Message ;
                     }
                 }
             }
