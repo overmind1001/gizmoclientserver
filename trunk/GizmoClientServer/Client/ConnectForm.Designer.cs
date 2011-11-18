@@ -126,10 +126,10 @@
         #endregion
 
         private System.Windows.Forms.Button butConnect;
-        private System.Windows.Forms.TextBox tbIp;
+        public System.Windows.Forms.TextBox tbIp;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.NumericUpDown numericUpDownPort;
+        public System.Windows.Forms.NumericUpDown numericUpDownPort;
         public System.Windows.Forms.TextBox tbName;
         private System.Windows.Forms.Label label3;
     }

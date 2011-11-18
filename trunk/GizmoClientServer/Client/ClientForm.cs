@@ -10,6 +10,8 @@ using System.Net.Sockets;
 using System.Threading;
 using System.IO;
 using System.IO.Pipes;
+using Dispatcher;
+using System.Net;
 
 namespace Client
 {
@@ -29,7 +31,14 @@ namespace Client
         public ClearHandler ClearPeopleD;
         public ClearHandler ClearFilesD;
 
-        TcpClient tcpClient;
+        //TcpClient tcpClient;
+        string serverIp;
+        int serverPort;
+
+        TcpListener TcpListener=null;
+        int ListenerPort;
+
+        string name;
 
         public ClientForm()
         {
@@ -82,61 +91,108 @@ namespace Client
                 return;
             }
             ////////////тут загружаем список контактов и т.д.
-            tcpClient = cf.tcpClient;
-            NetworkStream ns = tcpClient.GetStream();
+
+            
+            this.TcpListener= cf.tcpListener;
+            ListenerPort = cf.MyPort;
+            serverIp = cf.tbIp.Text;
+            serverPort = Convert.ToInt32( cf.numericUpDownPort.Value);
+            name = cf.tbName.Text;
+
+            //запускаем поток для TcpListenera
+            Thread tcpListenerThread = new Thread(TcpListenerThread);
+            tcpListenerThread.Start();
+
+            TcpClient tcpClient = cf.tcpClient;
+            NetStreamReaderWriter nsrw = new NetStreamReaderWriter(tcpClient.GetStream());
+            //NetworkStream ns = tcpClient.GetStream();
+
             //регистрируемся на сервере
-            if (!registerMe(ns, cf.tbName.Text))
+            if (!registerMe(nsrw, cf.tbName.Text))
                 return;
             //загружаем список контактов
-            getContactListFromServer(ns);
+
+            //эти операции асинхронные
+            AsyncGetContactListFromServer();
+            //getContactListFromServer(ns);
             //загружаем список файлов
-            getFileListFromServer(ns);
+            AsyncGetFileListFromServer();
+            //getFileListFromServer(ns);
 
 
-            //запускаем поток прослушки
-            Thread t = new Thread(Listen);
-            t.Start(tcpClient);
+            ////запускаем поток прослушки
+            //Thread t = new Thread(Listen);
+            //t.Start(tcpClient);
         }
 
-        //поток слухача
-        private void Listen(Object tcpCliento)
+        //поток для приема входящих соединений
+        void TcpListenerThread()
+        {
+            while (true)
+            {
+                TcpClient tcpClient = TcpListener.AcceptTcpClient();
+                ThreadPool.QueueUserWorkItem(Listen,tcpClient);
+            }
+        }
+
+
+        private void Listen(Object tcpCliento)//обработка команды
         {
             TcpClient tcpClient =(TcpClient) tcpCliento;
-            NetworkStream ns = tcpClient.GetStream();
-            StreamReader sr = new StreamReader(ns);
+            //NetworkStream ns = tcpClient.GetStream();
+            //StreamReader sr = new StreamReader(ns);
+            NetStreamReaderWriter nsrw = new NetStreamReaderWriter(tcpClient.GetStream());
 
             // Тут косяк. По истечению срока соединение закрывается. И при дальнейших попытках получить стрим, падение
 
             //sr.BaseStream.ReadTimeout = 2000000;//20 сек ждем, затем снова пытаемся читать
             char[] sep = { ' ' };
-            while (tcpClient.Connected)
+            if (tcpClient.Connected)
             {
                 try
                 {
-                    string cmd = sr.ReadLine();
-                    string[] splited = cmd.Split(sep);
+                    NetCommand command = nsrw.ReadCmd();
+                    //string cmd = sr.ReadLine();
+                    //string[] splited = cmd.Split(sep);
 
-                    switch (splited[0])
+                    switch (command.cmd)
                     {
                         case "!message"://прием сообщения                            
-                            string message = cmd.Substring(splited[0].Length);
+                            //string message = cmd.Substring(splited[0].Length);
+                            string message = command.parameters;
                             WriteMessageD(message);
                             break;
                         case "!clientregistered":
-                            string cl = splited[1];
-                            AddManD(cl);
+                            //string cl = splited[1];
+                            string cl = command.parameters;
+                            lock (lbPeople)
+                            {
+                                AddManD(cl);
+                            }
                             break;
                         case "!clientunregistered":
-                            cl = splited[1];
-                            RemoveManD(cl);
+                            //cl = splited[1];
+                            cl = command.parameters;
+                            lock (lbPeople)
+                            {
+                                RemoveManD(cl);
+                            }
                             break;
                         case "!addfile":
-                            string file = splited[1];
-                            AddFileD(file);
+                            //string file = splited[1];
+                            string file = command.parameters;
+                            lock (lbFilesList)
+                            {
+                                AddFileD(file);
+                            }
                             break;
                         case "!deletefile":
-                            file = splited[1];
-                            RemoveFileD(file);
+                            //file = splited[1];
+                            file = command.parameters;
+                            lock (lbFilesList)
+                            {
+                                RemoveFileD(file);
+                            }
                             break;
                         default:
                             MessageBox.Show("неизвестная команда!");
@@ -152,16 +208,27 @@ namespace Client
             }
         }
         //регистрация на сервере (через диспетчер или напрямую)
-        private bool registerMe(NetworkStream ns,string name)
+        private bool registerMe(NetStreamReaderWriter ns,string name)
         {
-            StreamWriter sw = new StreamWriter(ns);
-            sw.AutoFlush = true;
-            sw.WriteLine("!register "+name);
+            //StreamWriter sw = new StreamWriter(ns);
+            //sw.AutoFlush = true;
 
-            StreamReader sr = new StreamReader(ns);
-            string answer = sr.ReadLine();
+            NetCommand registerCmd = new NetCommand()
+            {
+                Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                Port = ListenerPort,
+                sender = "client",//пока что безымянный
+                cmd = "!register",
+                parameters = name
+            };
+            //sw.WriteLine("!register "+name);
+            ns.WriteCmd(registerCmd);
 
-            if (answer == "!registred")
+            //StreamReader sr = new StreamReader(ns);
+            NetCommand ansRegisterCmd = ns.ReadCmd();
+            //string answer = sr.ReadLine();
+
+            if (ansRegisterCmd.cmd == "!registred")
             {
                 return true;
             }
@@ -169,41 +236,95 @@ namespace Client
                 return false;
         }
         //получение контакт листа
+        private void AsyncGetContactListFromServer()
+        {
+            Thread t = new Thread(() =>
+                {
+                    TcpClient tcp = new TcpClient(serverIp, serverPort);
+                    NetworkStream ns = tcp.GetStream();
+                    getContactListFromServer(ns);
+                }
+            );
+            t.Start();
+        }
         private void getContactListFromServer(NetworkStream ns)
         {
-            StreamWriter sw = new StreamWriter(ns);
-            sw.AutoFlush = true;
-            sw.WriteLine("!getclientlist");         //посылка команды
+            //StreamWriter sw = new StreamWriter(ns);
+            //sw.AutoFlush = true;
+            NetStreamReaderWriter nsrw = new NetStreamReaderWriter(ns);
+            NetCommand getClientListCmd = new NetCommand()
+            {
+                Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                Port = ListenerPort,
+                sender = name,//пока что безымянный
+                cmd = "!getclientlist",
+                parameters = name
+            };
+            nsrw.WriteCmd(getClientListCmd);
 
-            StreamReader sr = new StreamReader(ns);
-            string answer = sr.ReadLine();          //получение ответа
+            //sw.WriteLine("!getclientlist");         //посылка команды
+
+            //StreamReader sr = new StreamReader(ns);
+            //string answer = sr.ReadLine();          //получение ответа
+            NetCommand ansGetClientList = nsrw.ReadCmd();
 
             char[] sep = { '|' };
-            string[] names = answer.Split(sep);//получили массив имен
+            string[] names = ansGetClientList.parameters.Split(sep);//получили массив имен
 
-            ClearPeopleD();
-            foreach (String s in names)
+            
+            lock (lbPeople)
             {
-                AddManD(s);
+                ClearPeopleD();
+                foreach (String s in names)
+                {
+                    AddManD(s);
+                }
             }
         }
         //получение файл листа
+        private void AsyncGetFileListFromServer()
+        {
+            Thread t = new Thread(() =>
+            {
+                TcpClient tcp = new TcpClient(serverIp, serverPort);
+                NetworkStream ns = tcp.GetStream();
+                getFileListFromServer(ns);
+            }
+            );
+            t.Start();
+        }
         private void getFileListFromServer(NetworkStream ns)
         {
-            StreamWriter sw = new StreamWriter(ns);
-            sw.AutoFlush = true;
-            sw.WriteLine("!getfilelist");         //посылка команды
 
-            StreamReader sr = new StreamReader(ns);
-            string answer = sr.ReadLine();          //получение ответа
+            NetStreamReaderWriter nsrw = new NetStreamReaderWriter(ns);
+            NetCommand getFileListCmd = new NetCommand()
+            {
+                Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                Port = ListenerPort,
+                sender = name,//пока что безымянный
+                cmd = "!getfilelist",
+                parameters = ""
+            };
+            nsrw.WriteCmd(getFileListCmd);
+
+            //StreamWriter sw = new StreamWriter(ns);
+            //sw.AutoFlush = true;
+            //sw.WriteLine("!getfilelist");         //посылка команды
+
+            //StreamReader sr = new StreamReader(ns);
+            //string answer = sr.ReadLine();          //получение ответа
+            NetCommand ansGetFileList = nsrw.ReadCmd();
 
             char[] sep = { '|' };
-            string[] files = answer.Split(sep);//получили массив имен
+            string[] files = ansGetFileList.parameters.Split(sep);//получили массив имен
 
-            ClearFilesD();
-            foreach (String s in files)
+            lock (lbFilesList)
             {
-                AddFileD(s);
+                ClearFilesD();
+                foreach (String s in files)
+                {
+                    AddFileD(s);
+                }
             }
         }
         //получение адреса файл-сервера для заливки файла
@@ -301,26 +422,38 @@ namespace Client
             nps.Close();
         }
         //посылка сообщения
+        private void AsyncSendMessage(string mes)
+        {
+            Thread t = new Thread(() =>
+            {
+                TcpClient tcp = new TcpClient(serverIp, serverPort);
+                NetworkStream ns = tcp.GetStream();
+                sendMessage(ns,mes);
+            }
+            );
+            t.Start();
+        }
         private void sendMessage(NetworkStream ns,string mes)
         {
-            StreamWriter sw = new StreamWriter(ns);
-            sw.AutoFlush = true;
-            sw.WriteLine("!message " + mes);
+            NetStreamReaderWriter nsrw = new NetStreamReaderWriter(ns);
+            NetCommand messageCmd = new NetCommand()
+            {
+                Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                Port = ListenerPort,
+                sender = name,//пока что безымянный
+                cmd = "!message",
+                parameters = mes
+            };
+            nsrw.WriteCmd(messageCmd);
         }
         private void btnSend_Click(object sender, EventArgs e)
         {
-            if (tcpClient == null)
-                return;
-
             if (tbMessage.Text.Trim() == string.Empty)
                 return;
-            if (tcpClient.Connected != false)
-            {
-                NetworkStream ns = tcpClient.GetStream();
-                sendMessage(ns, tbMessage.Text);
-            }
-            else
-                MessageBox.Show("С какого то хера я отключился!");
+            if (name == string.Empty)
+                return;
+            AsyncSendMessage(tbMessage.Text);
+           
 
         }
     }
