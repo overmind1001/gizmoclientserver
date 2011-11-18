@@ -66,12 +66,14 @@
             this.m_menuRun.Name = "m_menuRun";
             this.m_menuRun.Size = new System.Drawing.Size(152, 22);
             this.m_menuRun.Text = "Поднять";
+            this.m_menuRun.Click += new System.EventHandler(this.m_menuRun_Click);
             // 
             // m_menuStop
             // 
             this.m_menuStop.Name = "m_menuStop";
             this.m_menuStop.Size = new System.Drawing.Size(152, 22);
             this.m_menuStop.Text = "Уронить";
+            this.m_menuStop.Click += new System.EventHandler(this.m_menuStop_Click);
             // 
             // m_statusStrip
             // 
