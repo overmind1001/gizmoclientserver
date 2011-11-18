@@ -299,19 +299,33 @@ namespace Dispatcher
                                 lock (MsgServers)
                                 {
                                     Random r = new Random();
-                                    int i=r.Next(0, MsgServers.Count-1);
-                                    msgServ = MsgServers[i];
+                                    if (MsgServers.Count != 0)
+                                    {
+                                        int i = r.Next(0, MsgServers.Count - 1);
+                                        msgServ = MsgServers[i];
+                                        NetCommand msgServerCmd = new NetCommand()
+                                        {
+                                            Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                                            Port = 500,
+                                            sender = "dispatcher",
+                                            cmd = "!msgserver",
+                                            parameters = String.Format("{0} {1}", msgServ.Ip, msgServ.Port)
+                                        };
+                                        nsrw.WriteCmd(msgServerCmd);
+                                    }
+                                    else
+                                    {
+                                        NetCommand hasNotServerCmd = new NetCommand()
+                                        {
+                                            Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                                            Port = 500,
+                                            sender = "dispatcher",
+                                            cmd = "!hasnotserver",
+                                            parameters = ""
+                                        };
+                                        nsrw.WriteCmd(hasNotServerCmd);
+                                    }   
                                 }
-             
-                                NetCommand msgServerCmd = new NetCommand()
-                                {
-                                    Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
-                                    Port = 500,
-                                    sender = "dispatcher",
-                                    cmd = "!msgserver",
-                                    parameters = String.Format("{0} {1}", msgServ.Ip, msgServ.Port)
-                                };
-                                nsrw.WriteCmd(msgServerCmd);
                                 break;
                         }
                     }
