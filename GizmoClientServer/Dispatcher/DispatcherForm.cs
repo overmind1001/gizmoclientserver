@@ -114,7 +114,7 @@ namespace Dispatcher
                     unregisteredServers.Clear();
                     foreach (ServerInfo s in MsgServers)
                     {
-                        if (s.tcpClient.Connected == false)//сервер отключен
+                        if ( ( DateTime.Now-s.lastPingTime).TotalSeconds>30)//сервер не пингует уже 30 сек
                         {
                             unregisteredServers.Add(s);
                         }
@@ -133,7 +133,7 @@ namespace Dispatcher
                     unregisteredFileServers.Clear();
                     foreach (ServerInfo s in FileServers)
                     {
-                        if (s.tcpClient.Connected == false)//сервер отключен
+                        if ((DateTime.Now - s.lastPingTime).TotalSeconds > 30)//сервер отключен
                         {
                             unregisteredFileServers.Add(s);
                         }
@@ -563,7 +563,34 @@ namespace Dispatcher
                                     };
                                     netStream.WriteCmd(errorCmd);
                                 }
-                                
+                                break;
+                            case "!ping":
+
+                                if (command.sender == "msgserver")
+                                {
+                                    lock (MsgServers)
+                                    {
+                                        ServerInfo si = MsgServers.Find((ServerInfo s) => { return (s.Ip == command.Ip && s.Port == command.Port); });
+                                        if (si != null)
+                                        {
+                                            si.lastPingTime = DateTime.Now;
+                                        }
+                                        else
+                                        {
+                                            MessageBox.Show("Пингующий сервер (СОС) не найден!", "Так быть не должно");
+                                        }
+                                    }
+                                }
+                                //TODO надо будет сделать для файл сервера
+                                NetCommand pongCmd = new NetCommand()
+                                {
+                                    Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                                    Port = 501,
+                                    sender = "dispatcher",
+                                    cmd = "!pong",
+                                    parameters = ""
+                                };
+                                netStream.WriteCmd(pongCmd);
                                 break;
                             case "!getfileserver":
                                 //////////////////////////////////////TODO
