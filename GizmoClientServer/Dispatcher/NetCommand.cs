@@ -33,7 +33,7 @@ namespace Dispatcher
             sender = splited[2];
             cmd = splited[3];
 
-            int len = splited[0].Length + splited[1].Length + splited[2].Length + splited[3].Length;
+            int len = splited[0].Length + splited[1].Length + splited[2].Length + splited[3].Length+4;
             parameters = s.Substring(len);
         }
         public override string ToString()

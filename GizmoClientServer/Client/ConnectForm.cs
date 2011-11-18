@@ -114,6 +114,10 @@ namespace Client
                     //sw.WriteLine("!getserver");
                     NetCommand ansServerAddress = nsrw.ReadCmd();
                     //String servIPport = sr.ReadLine()
+                    if (ansServerAddress.cmd == "!hasnotserver")
+                    {
+                        MessageBox.Show("А нету серверов!");
+                    }
                     if (ansServerAddress.cmd != "!msgserver")
                     {
                         MessageBox.Show("Вместо адреса сервера получена шняга", "Какая-то фигня");

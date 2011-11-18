@@ -39,7 +39,7 @@ namespace Dispatcher
             sr = new StreamReader(s);
             sw = new StreamWriter(s);
             AutoFlush = true;
-            ReadTimeout = 10000000;
+            ReadTimeout = 20000;
         }
 
         public void WriteLine(string line)
