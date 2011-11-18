@@ -13,6 +13,17 @@ namespace Dispatcher
         public string cmd { get; set; }
         public string parameters {get; set; }
 
+        public NetCommand Clone()
+        {
+            return new NetCommand()
+            {
+                Ip = this.Ip,
+                Port = this.Port,
+                sender = this.sender,
+                cmd = this.cmd,
+                parameters = this.parameters
+            };
+        }
 
         public void FromString(string s)
         {
