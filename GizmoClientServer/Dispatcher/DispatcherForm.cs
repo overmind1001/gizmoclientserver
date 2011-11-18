@@ -66,12 +66,15 @@ namespace Dispatcher
         void AsyncSendText(string ip,int port,string text)//асинхронная посылка текста
         {
             Thread t = new Thread(() => 
-            {
+            {//потоковая процедура
                 try
                 {
                     TcpClient tcpClient = new TcpClient(ip, port);
                     NetStreamReaderWriter ns = new NetStreamReaderWriter(tcpClient.GetStream());
                     ns.WriteLine(text);
+                    //тут надо что-то сделать чтобы не закрыть соединение, пока клиент не примет сообщение
+                    //пока что костыль
+                    Thread.Sleep(10000);
                 }
                 catch (Exception ex)
                 {
