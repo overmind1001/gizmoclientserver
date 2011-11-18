@@ -88,7 +88,7 @@ namespace Dispatcher
         {
             AsyncSendText(ip, port, cmd.ToString());
         }
-        void SendText(string ip, int port, string text)
+        void SendText(string ip, int port, string text)//синхронная посылка команды(в том же потоке)
         {
             try
             {
@@ -107,7 +107,7 @@ namespace Dispatcher
             SendText(ip, port, cmd.ToString());
         }
             
-        void availableCheck()
+        void availableCheck()//потоковая процедура проверки доступности серверов и файл серверов
         {
             List<ServerInfo> unregisteredServers = new List<ServerInfo>();
             while (Running)
@@ -238,7 +238,7 @@ namespace Dispatcher
             };
             SendCmdToAllServers(serverUnregisteredCmd);
         }
-
+        //методы для взаимодействия с формой. Вызываются через делегаты
         void UpdateMsgServerList()
         {
             lbMsgServers.DataSource = null;
@@ -787,9 +787,10 @@ namespace Dispatcher
             }
         }
         //Широковещание
-        void broadcastSelfInfo()
+        void broadcastSelfInfo()//потоковая процедура для организации циклической посылки широковещательных сообщений
         {
             Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            s.EnableBroadcast = true;
             //IPAddress broadcast = IPAddress.Parse("192.127.150.255");
             IPHostEntry host=Dns.GetHostByName(Dns.GetHostName());
             IPAddress broadcast =  host.AddressList[0];
