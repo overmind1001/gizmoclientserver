@@ -14,7 +14,7 @@ using System.Diagnostics;
 
 namespace Dispatcher
 {
-    
+  
     
 
     public partial class DispatcherForm : Form
@@ -60,11 +60,50 @@ namespace Dispatcher
             //запустить поток проверки доступности подключения
             Thread availableCheckThred = new Thread(availableCheck);
             availableCheckThred.Start();
-
-
         }
-
-        
+    
+   
+        void AsyncSendText(string ip,int port,string text)//асинхронная посылка текста
+        {
+            Thread t = new Thread(() => 
+            {
+                try
+                {
+                    TcpClient tcpClient = new TcpClient(ip, port);
+                    NetStreamReaderWriter ns = new NetStreamReaderWriter(tcpClient.GetStream());
+                    ns.WriteLine(text);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.AutoFlush = true;
+                    System.Diagnostics.Debug.WriteLine("Dispatcher. AsyncSendText. "+ex.Message);
+                }
+            });
+            t.Start();
+        }
+        void AsyncSendCmd(string ip, int port, NetCommand cmd)
+        {
+            AsyncSendText(ip, port, cmd.ToString());
+        }
+        void SendText(string ip, int port, string text)
+        {
+            try
+            {
+                TcpClient tcpClient = new TcpClient(ip, port);
+                NetStreamReaderWriter ns = new NetStreamReaderWriter(tcpClient.GetStream());
+                ns.WriteLine(text);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.AutoFlush = true;
+                System.Diagnostics.Debug.WriteLine("Dispatcher. AsyncSendText. " + ex.Message);
+            }
+        }
+        void SendCmd(string ip, int port, NetCommand cmd)
+        {
+            SendText(ip, port, cmd.ToString());
+        }
+            
         void availableCheck()
         {
             List<ServerInfo> unregisteredServers = new List<ServerInfo>();
@@ -86,7 +125,6 @@ namespace Dispatcher
                 foreach (ServerInfo s in unregisteredServers)
                 {
                     unregisterServer(s.Ip, s.Port);
-                    //SendTextToAllServers(String.Format( "!serverunregistered {0} {1}",s.Ip,s.Port));
                 }
 
                 List<ServerInfo> unregisteredFileServers = new List<ServerInfo>();
@@ -124,7 +162,15 @@ namespace Dispatcher
                             foreach (FileInfo f in fileServer.fileInfos)
                             {
                                 filesToDelete.Add(f);
-                                SendTextToAllServers(String.Format("!deletefile {0}", f.Filename));
+                                NetCommand deletefileCmd = new NetCommand() 
+                                {
+                                    Ip = Dns.GetHostAddresses( Dns.GetHostName())[0].ToString(),
+                                    Port = 501,
+                                    sender = "dispatcher",
+                                    cmd ="!deletefile",
+                                    parameters = f.Filename
+                                };
+                                SendCmdToAllServers(deletefileCmd);
                             }
                             foreach (FileInfo f in filesToDelete)//удаляем из коллекции
                             {
@@ -166,12 +212,28 @@ namespace Dispatcher
                     Clients.Remove(c);
                     ClientsListChanged();
                 }
-                SendTextToAllServers(String.Format("!clienturegistered {0}",c.ClientName));
+                NetCommand clientUnregisteredCmd = new NetCommand()
+                {
+                    Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                    Port = 501,
+                    sender = "dispatcher",
+                    cmd = "!clienturegistered",
+                    parameters = c.ClientName
+                };
+                SendCmdToAllServers(clientUnregisteredCmd);
             }
         }
         void SendServerUnregistered(string ip, int port)
         {
-            SendTextToAllServers(string.Format("!serverunregistered {0} {1}",ip,port));
+            NetCommand serverUnregisteredCmd = new NetCommand()
+            {
+                Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                Port = 501,
+                sender = "dispatcher",
+                cmd = "!serverunregistered",
+                parameters = string.Format("{0} {1}", ip, port)
+            };
+            SendCmdToAllServers(serverUnregisteredCmd);
         }
 
         void UpdateMsgServerList()
@@ -210,25 +272,24 @@ namespace Dispatcher
             using (TcpClient tcpClient = (TcpClient) tcpclient)
             using (NetworkStream ns = tcpClient.GetStream())
             {
-                StreamReader sr = new StreamReader(ns);
-                sr.BaseStream.ReadTimeout = 20000;//ожидание 20 сек.
-                StreamWriter sw = new StreamWriter(ns);
-                sw.AutoFlush = true;
-                string cmd;
-                
-                while (tcpClient.Connected)
+                NetStreamReaderWriter nsrw = new NetStreamReaderWriter(ns);
+                while (tcpClient.Connected)//??
                 {
-                    
                     try
                     {
-                        cmd = sr.ReadLine();
-                        switch (cmd)
+                        NetCommand command = nsrw.ReadCmd();
+                        
+                        switch (command.cmd)
                         {
                             case "!who":
-                                lock (tcpclient)
+                                NetCommand dispatcherCmd = new NetCommand()
                                 {
-                                    sw.WriteLine("dispatcher");
-                                }
+                                    Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                                    Port = 500,
+                                    sender = "dispatcher",
+                                    cmd = "!dispatcher"
+                                };
+                                nsrw.WriteCmd(dispatcherCmd);
                                 break;
                             case "!getserver":
                                 ServerInfo msgServ;
@@ -238,10 +299,16 @@ namespace Dispatcher
                                     int i=r.Next(0, MsgServers.Count-1);
                                     msgServ = MsgServers[i];
                                 }
-                                lock (tcpclient)
+             
+                                NetCommand msgServerCmd = new NetCommand()
                                 {
-                                    sw.WriteLine(String.Format("{0} {1}", msgServ.Ip, msgServ.Port));
-                                }
+                                    Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                                    Port = 500,
+                                    sender = "dispatcher",
+                                    cmd = "!msgserver",
+                                    parameters = String.Format("{0} {1}", msgServ.Ip, msgServ.Port)
+                                };
+                                nsrw.WriteCmd(msgServerCmd);
                                 break;
                         }
                     }
@@ -382,13 +449,10 @@ namespace Dispatcher
             {
                 ServerInfo serverInfo=null;
                 NetStreamReaderWriter netStream = new NetStreamReaderWriter(ns);
-                
                 string[] parameters;
-                string cmd;
-                string line;
-                string param;       //если параметр 1
+                NetCommand command;
 
-                while (tcpClient.Connected)
+                if (tcpClient.Connected)
                 {
 
                     try
@@ -396,111 +460,129 @@ namespace Dispatcher
                         while (tcpClient.Available < 1)//пока ничего не пришло ждем
                         {
                             Thread.Sleep(200);
+                            if (!tcpClient.Connected)
+                                return;
                         }
-                        
-                        
-                        line = netStream.ReadLine();
-                        parameters = line.Split(new char[] { ' ' });
-                        cmd = parameters[0];
-                        param = line.Substring(cmd.Length);
-
-                   
-                        
+                        command = netStream.ReadCmd();
+                        parameters = command.parameters.Split(new char[] { ' ' });
                        
-                        switch (cmd)
+                        switch (command.cmd)
                         {
                             case "!who":        //к кому я подключился?
-                                lock (tcpclient)
+                                NetCommand dispatcherCmd = new NetCommand()
                                 {
-                                    netStream.WriteLine("dispatcher");
-                                }
+                                    Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                                    Port = 501,
+                                    sender = "dispatcher",
+                                    cmd = "!dispatcher"
+                                };
+                                netStream.WriteCmd(dispatcherCmd);
                                 break;
                             case "!register":   //зарегистрируй меня
-                                if (AddServer(parameters[1], parameters[2], Convert.ToInt32(parameters[3]),out serverInfo))
+                                if (AddServer(parameters[0], parameters[1], Convert.ToInt32(parameters[2]),out serverInfo))
                                 {
-                                    lock (tcpclient)
+                                    NetCommand registredCmd = new NetCommand()
                                     {
-                                        netStream.WriteLine("registered");
-                                    }
-                                    //загрузка клиент-листа
+                                        Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                                        Port = 502,
+                                        sender = "dispatcher",
+                                        cmd = "!registered"
+                                    };
+                                    netStream.WriteCmd(registredCmd);
                                     
-                                    //beginLock
-                                    //TODO
-                                    //getClientListFromServer(netStream);
                                     
                                 }
                                 else
                                 {
-                                    lock (tcpclient)
+                                    NetCommand notRegistredCmd = new NetCommand()
                                     {
-                                        netStream.WriteLine("notregistered");
-                                    }
+                                        Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                                        Port = 501,
+                                        sender = "dispatcher",
+                                        cmd = "!notregistered",
+                                        parameters=""
+                                    };
+                                    netStream.WriteCmd(notRegistredCmd);
                                 }
                                 break;
                             case "!getserverlist":  //дай мне список серверв сообщений
-                                lock (tcpclient)
-                                {
-                                    SendServerList(ns);
-                                }
+                                SendServerList(ns);
                                 break;
                             case "!getclientlist":  //дай мне список клиентов
-                                lock (tcpclient)
-                                {
-                                    SendClientList(ns);
-                                }
+                                SendClientList(ns);
                                 break;
                             case "!clientregistered":   //появился новый клиент
-                                if (RegisterClient(param))
-                                    SendTextToAllServers(line);
+                                if (RegisterClient(command.parameters))
+                                {
+                                    NetCommand c = command.Clone();//адрес отправителя уже другой
+                                    c.Ip = Dns.GetHostAddresses( Dns.GetHostName())[0].ToString();
+                                    SendCmdToAllServers(c);
+                                }
                                 break;
                             case "!clientunregistered":
-                                UnregisterClient(param);
-                                SendTextToAllServers(line);
+                                UnregisterClient(command.parameters);
+                                {
+                                    NetCommand c = command.Clone();//адрес отправителя уже другой
+                                    c.Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString();
+                                    c.Port = 501;
+                                    SendCmdToAllServers(c);
+                                }
                                 break;
                             case "!getfilelist":
-                                lock (tcpclient)
-                                {
-                                    SendFileList(ns);
-                                }
+                                SendFileList(ns);
                                 break;
                             case "!getfreefileserver":
-                                lock (tcpclient)
+                                if (FileServers.Count > 0)
                                 {
-                                    if (FileServers.Count > 0)
+                                    ServerInfo fileServ;
+                                    lock (FileServers)
                                     {
-                                        ServerInfo fileServ;
-                                        lock (FileServers)
-                                        {
-                                            Random r = new Random();
-                                            int i = r.Next(0, FileServers.Count - 1);
-                                            fileServ = FileServers[i];
-                                        }
-                                        netStream.WriteLine(String.Format("{0} {1}", fileServ.Ip, fileServ.Port));
+                                        Random r = new Random();
+                                        int i = r.Next(0, FileServers.Count - 1);
+                                        fileServ = FileServers[i];
                                     }
-                                    else
+                                    NetCommand freeFileServerCmd = new NetCommand()
                                     {
-                                        netStream.WriteLine("error");
-                                    }
+                                        Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                                        Port = 501,
+                                        sender = "dispatcher",
+                                        cmd = "!freefileserver",
+                                        parameters = String.Format("{0} {1}", fileServ.Ip, fileServ.Port)
+                                    };
+                                    netStream.WriteCmd(freeFileServerCmd);
                                 }
+                                else
+                                {
+                                    NetCommand errorCmd = new NetCommand()
+                                    {
+                                        Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                                        Port = 501,
+                                        sender = "dispatcher",
+                                        cmd = "!error",
+                                        parameters = ""
+                                    };
+                                    netStream.WriteCmd(errorCmd);
+                                }
+                                
                                 break;
                             case "!getfileserver":
                                 //////////////////////////////////////TODO
                                 break;
 
                             default:
-                                MessageBox.Show("Dispatcher: Неизвестная команда. " + line);
+                                MessageBox.Show("Dispatcher: Неизвестная команда. " + command.ToString());
                                 break;
                         }
                     }
                     catch (IOException ioex)
                     {
-                        tbLog.Text += Environment.NewLine + ioex.Message;
+                        //tbLog.Text += Environment.NewLine + ioex.Message;
                         System.Diagnostics.Debug.WriteLine("Dispatcher :" + ioex.Message);
                     }
                 }
             }
         }
-        bool AddServer(string type, string ip, int port,out ServerInfo serv)
+        bool AddServer(string type, string ip, int port,out ServerInfo serv)//??
         {
             string serverRecord = type+"_"+ip.ToString()+"_"+port;
             ServerInfo serverInfo = new ServerInfo();
@@ -515,8 +597,16 @@ namespace Dispatcher
                     MsgServers.Add(serverInfo);
                 }
                 MsgServerListChanged();//обновление списка серверов на форме
-                SendTextToAllServers(string.Format("!serverregistered {0} {1}",ip,port));
 
+                NetCommand serverregisteredCmd = new NetCommand()
+                {
+                    Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                    Port = 501,
+                    sender = "dispatcher",
+                    cmd = "!serverregistered",
+                    parameters = string.Format("{0} {1}", ip, port)
+                };
+                SendCmdToAllServers(serverregisteredCmd);
                 //TODO Запросить список клиентов
             }
             else
@@ -527,13 +617,12 @@ namespace Dispatcher
                 }
                 FileServerListChanged();//обновление списка файлов на сервере
 
-
                 //TODO Запросить список файлов
             }
 
             return true;
         }
-        void SendServerList(Stream stream)
+        void SendServerList(Stream stream)//в ответ
         {
             NetStreamReaderWriter ns = new NetStreamReaderWriter(stream);
             string line = "";
@@ -546,9 +635,17 @@ namespace Dispatcher
                         line += "|";
                 }
             }
-            ns.WriteLine(line);
+            NetCommand serverListCmd = new NetCommand()
+            {
+                Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                Port = 501,
+                sender = "dispatcher",
+                cmd = "!serverlist",
+                parameters = line
+            };
+            ns.WriteCmd(serverListCmd);
         }
-        void SendClientList(Stream stream)
+        void SendClientList(Stream stream)//в ответ
         {
             NetStreamReaderWriter ns = new NetStreamReaderWriter(stream);
             string line = "";
@@ -561,9 +658,17 @@ namespace Dispatcher
                         line += "|";
                 }
             }
-            ns.WriteLine(line);
+            NetCommand clientListCmd = new NetCommand()
+            {
+                Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                Port = 501,
+                sender = "dispatcher",
+                cmd = "!clientlist",
+                parameters = line
+            };
+            ns.WriteCmd(clientListCmd);
         }
-        void SendFileList(Stream stream)
+        void SendFileList(Stream stream)//в ответ
         {
             NetStreamReaderWriter ns = new NetStreamReaderWriter(stream);
             string line = "";
@@ -573,27 +678,54 @@ namespace Dispatcher
                 if (i != Files.Count - 1)
                     line += "|";
             }
-            ns.WriteLine(line);
+            NetCommand fileListCmd = new NetCommand()
+            {
+                Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                Port = 501,
+                sender = "dispatcher",
+                cmd = "!filelist",
+                parameters = line
+            };
+            ns.WriteCmd(fileListCmd);
         }
-        void SendTextToAllServers(string line)
+        void SendCmdToAllServers(NetCommand cmd)
         {
-            for (int i = 0; i < MsgServers.Count;i++ )
+            SendTextToAllServers(cmd.ToString());
+        }
+        void SendTextToAllServers(string line)//асинхронно
+        {
+            for (int i = 0; i < MsgServers.Count; i++)
             {
                 try
                 {
-                    lock (MsgServers[i].tcpClient)
-                    {
-                        NetStreamReaderWriter ns = new NetStreamReaderWriter(MsgServers[i].tcpClient.GetStream());
-                        ns.WriteLine(line);
-                    }
+                    AsyncSendText(MsgServers[i].Ip, MsgServers[i].Port, line);
                 }
-                catch(IOException ioex)
+                catch (IOException ioex)
                 {
                     System.Diagnostics.Debug.AutoFlush = true;
-                    System.Diagnostics.Debug.WriteLine("Dispatcher:"+ioex.Message+"похоже что один из сереров отключился или поломался!");
+                    System.Diagnostics.Debug.WriteLine("Dispatcher:" + ioex.Message + "похоже что один из сереров отключился или поломался!");
                 }
             }
         }
+        //void SendTextToAllServers(string line)
+        //{
+        //    for (int i = 0; i < MsgServers.Count;i++ )
+        //    {
+        //        try
+        //        {
+        //            lock (MsgServers[i].tcpClient)
+        //            {
+        //                NetStreamReaderWriter ns = new NetStreamReaderWriter(MsgServers[i].tcpClient.GetStream());
+        //                ns.WriteLine(line);
+        //            }
+        //        }
+        //        catch(IOException ioex)
+        //        {
+        //            System.Diagnostics.Debug.AutoFlush = true;
+        //            System.Diagnostics.Debug.WriteLine("Dispatcher:"+ioex.Message+"похоже что один из сереров отключился или поломался!");
+        //        }
+        //    }
+        //}
         bool RegisterClient(string name)
         {
             lock (Clients)
