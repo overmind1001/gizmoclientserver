@@ -53,6 +53,7 @@
       <DependentUpon>DispatcherForm.cs</DependentUpon>
     </Compile>
     <Compile Include="FileInfo.cs" />
+    <Compile Include="NetCommand.cs" />
     <Compile Include="NetStreamReaderWriter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
