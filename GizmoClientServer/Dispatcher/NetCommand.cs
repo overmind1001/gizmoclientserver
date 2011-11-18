@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Dispatcher
 {
-    class NetCommand
+    public class NetCommand
     {
         public string Ip { get; set; }
         public int Port { get; set; }
