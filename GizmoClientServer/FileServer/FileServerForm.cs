@@ -15,5 +15,17 @@ namespace FileServer
         {
             InitializeComponent();
         }
+
+        //Поднять сервер
+        private void m_menuRun_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        //Уронить сервер
+        private void m_menuStop_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
