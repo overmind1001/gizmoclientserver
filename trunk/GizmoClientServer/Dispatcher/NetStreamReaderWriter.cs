@@ -50,5 +50,18 @@ namespace Dispatcher
         {
             return sr.ReadLine();
         }
+
+        //для команд
+        public void WriteCmd(NetCommand cmd)
+        {
+            WriteLine(cmd.ToString());
+        }
+        public NetCommand ReadCmd()
+        {
+            NetCommand cmd = new NetCommand();
+            string line = ReadLine();
+            cmd.FromString(line);
+            return cmd;
+        }
     }
 }
