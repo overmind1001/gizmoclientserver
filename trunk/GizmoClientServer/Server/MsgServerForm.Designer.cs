@@ -106,14 +106,12 @@
             this.поднятьToolStripMenuItem.Name = "поднятьToolStripMenuItem";
             this.поднятьToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
             this.поднятьToolStripMenuItem.Text = "Поднять";
-            this.поднятьToolStripMenuItem.Click += new System.EventHandler(this.поднятьToolStripMenuItem_Click);
             // 
             // уронитьToolStripMenuItem
             // 
             this.уронитьToolStripMenuItem.Name = "уронитьToolStripMenuItem";
             this.уронитьToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
             this.уронитьToolStripMenuItem.Text = "Уронить";
-            this.уронитьToolStripMenuItem.Click += new System.EventHandler(this.уронитьToolStripMenuItem_Click);
             // 
             // tabControl1
             // 
@@ -242,8 +240,6 @@
             this.MinimumSize = new System.Drawing.Size(500, 300);
             this.Name = "MsgServerForm";
             this.Text = "Сервер сообщений";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MsgServerForm_FormClosed);
-            this.Load += new System.EventHandler(this.MsgServerForm_Load);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
             this.menuStrip1.ResumeLayout(false);
