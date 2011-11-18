@@ -50,6 +50,7 @@ namespace Client
                     TcpListener tcpListener = new TcpListener(port);
                     tcpListener.Start();
                     tcplistener = tcpListener;
+                    portHasGot = true;
                 }
                 catch (Exception ex)
                 { 
