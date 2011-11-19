@@ -1,12 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.IO;
 using System.IO.Pipes;
-using System.Windows.Forms;
+using System.Diagnostics;
+using Dispatcher;
 
 using Dispatcher;
 
@@ -15,7 +21,22 @@ namespace MsgServer
     class ClientItem
     {
 
+        private string m_Name;
+        private IPAddress m_IPAddress;
+        private int m_Port;
 
+        public ClientItem(string name, string ip, int port)
+        {
+            m_Name = name;
+            m_IPAddress = Dns.GetHostEntry(ip).AddressList[0];
+            m_Port = port;
+        }
+
+
+        public string GetName()
+        {
+            return m_Name;
+        }
 
 
 

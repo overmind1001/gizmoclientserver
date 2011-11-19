@@ -45,6 +45,8 @@
             this.lstServers = new System.Windows.Forms.ListBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.lstLog = new System.Windows.Forms.ListBox();
+            this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.lblPort = new System.Windows.Forms.ToolStripStatusLabel();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
@@ -63,7 +65,9 @@
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1,
-            this.lblStatus});
+            this.lblStatus,
+            this.toolStripStatusLabel2,
+            this.lblPort});
             this.statusStrip1.Location = new System.Drawing.Point(0, 373);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(555, 22);
@@ -214,7 +218,7 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(570, 313);
+            this.tabPage2.Size = new System.Drawing.Size(547, 323);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Журнал";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -227,6 +231,18 @@
             this.lstLog.Name = "lstLog";
             this.lstLog.Size = new System.Drawing.Size(564, 307);
             this.lstLog.TabIndex = 0;
+            // 
+            // toolStripStatusLabel2
+            // 
+            this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
+            this.toolStripStatusLabel2.Size = new System.Drawing.Size(38, 17);
+            this.toolStripStatusLabel2.Text = "Порт:";
+            // 
+            // lblPort
+            // 
+            this.lblPort.Name = "lblPort";
+            this.lblPort.Size = new System.Drawing.Size(13, 17);
+            this.lblPort.Text = "0";
             // 
             // MsgServerForm
             // 
@@ -278,6 +294,8 @@
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.ListBox lstLog;
         private System.Windows.Forms.ListBox lstClients;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel2;
+        private System.Windows.Forms.ToolStripStatusLabel lblPort;
 
     }
 }
