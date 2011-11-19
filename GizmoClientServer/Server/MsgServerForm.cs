@@ -12,6 +12,7 @@ using System.Threading;
 using System.IO;
 using System.IO.Pipes;
 using System.Diagnostics;
+using Dispatcher;
 
 namespace MsgServer
 {
@@ -24,9 +25,7 @@ namespace MsgServer
         private List<ServerItem>        m_ServersList;              // Список серверов
         private List<ClientItem>        m_ClientList;               // Список клиентов
         private Thread                  m_MainListenThread;         // Главный цикл прослушки порта
-
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // Запуск и настройка сервера
+        private int                     m_MaxClientCount;           // Максимальное количество клиентов
 
 
         /// <summary>
@@ -53,7 +52,9 @@ namespace MsgServer
             m_ServersList           = new List<ServerItem>();
             m_ClientList            = new List<ClientItem>();
 
-            m_MainListenThread      = new Thread(MainListenThreadFunc);
+            m_MaxClientCount        = 10;
+
+            ThreadPool.SetMaxThreads(10, 10);
         }
 
 
@@ -85,6 +86,7 @@ namespace MsgServer
                     HasFreePort = true;
 
                     Debug.WriteLine(" > Server. Свободный порт найден! Порт: " + RandPort);
+                    lblPort.Text = RandPort.ToString();
                 }
                 catch (Exception ex)
                 {
@@ -94,7 +96,7 @@ namespace MsgServer
 
             return RandPort;
         }
-        
+
 
 
         /// <summary>
@@ -102,8 +104,191 @@ namespace MsgServer
         /// </summary>
         private void MainListenThreadFunc()
         {
+            while (true)
+            {
+                TcpClient Tcp = m_Listener.AcceptTcpClient();
+                ThreadPool.QueueUserWorkItem(CommandThreadFunc, Tcp);
+            }
+        }
+
+
+
+        /// <summary>
+        /// Создает команду
+        /// </summary>
+        /// <param name="cmd">текст команды</param>
+        /// <param name="param">параметры команды</param>
+        /// <returns>созданная команда</returns>
+        private NetCommand CreateCommand(string cmd, string param)
+        {
+            NetCommand Cmd = new NetCommand()
+            {
+                Ip = m_ServerIP.ToString(),
+                Port = m_ServerPort,
+                sender = "msgserver",
+                cmd = cmd,
+                parameters = param
+            };
+
+            return Cmd;
+        }
+
+
+
+        /// <summary>
+        /// Генирирует команду ответа на запрос "!who"
+        /// </summary>
+        /// <returns></returns>
+        private NetCommand AnsWho()
+        {
+            return CreateCommand("!messageserver", "Сервер сообщений");
+        }
+
+
+
+        /// <summary>
+        /// Регистрирует клиента и генерирует команду ответа
+        /// </summary>
+        /// <param name="RegComand">команда запроса регистрации</param>
+        /// <returns>команда ответа</returns>
+        private NetCommand AnsRegister(NetCommand RegCmd)
+        {
+            NetCommand RetCmd;
+
+            if (m_ClientList.Count >= m_MaxClientCount)
+                RetCmd = CreateCommand("!unregistred", "Сервер переполнен");
+
+            if (FindClient(RegCmd.sender) != null)
+            {
+                RetCmd = CreateCommand("!unregistred", "Клиент с таким именем уже зарегистрирован");
+            }
+            else
+            {
+                if(AddClient(RegCmd.sender, RegCmd.Ip, RegCmd.Port))
+                    RetCmd = CreateCommand("!registred", "Регистрация успешно завершена");
+                else
+                    RetCmd = CreateCommand("!unregistred", "Регистрация не удалась");
+            }
+
+            return RetCmd;
+        }
+
+
+
+        /// <summary>
+        /// Рассылает сообщение всем клиентам из списка
+        /// </summary>
+        /// <param name="Sender">отправитель сообщения</param>
+        /// <param name="Msg">текст сообщения</param>
+        private void SendMsgToAllClients(string Sender ,string Msg)
+        {
 
         }
+
+
+        private NetCommand AnsClientList()
+        {
+            return null;
+        }
+
+
+
+        private NetCommand AnsFileList()
+        {
+            return null;
+        }
+
+
+
+        private NetCommand AnsFreeFileServer()
+        {
+            return null;
+        }
+
+
+        private NetCommand AnsFileServer(string filename)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Реализует единицу взаимодействия клиентов
+        /// </summary>
+        /// <param name="Tcp">tcp клиента</param>
+        private void CommandThreadFunc(object tcp)
+        {
+            TcpClient Tcp = (TcpClient)tcp;
+
+            try
+            {
+                NetStreamReaderWriter Stream = new NetStreamReaderWriter(Tcp.GetStream());
+                NetCommand Cmd = Stream.ReadCmd();
+
+                switch (Cmd.cmd)
+                {
+                    // Инициализация получателя
+                    case "!who":
+                        {
+                            Stream.WriteCmd(AnsWho());
+                        }
+                        break;
+
+                    // Регистрация этого клиента
+                    case "!register":
+                        {
+                            Stream.WriteCmd(AnsRegister(Cmd));
+                        }
+                        break;
+
+                    // Сообщение всем от этого клиента
+                    case "!message":
+                        {
+                            SendMsgToAllClients(Cmd.sender, Cmd.parameters);
+                        }
+                        break;
+
+                    // Запрос списка контактов
+                    case "!getclientlist":
+                        {
+                            Stream.WriteCmd(AnsClientList());
+                        }
+                        break;
+
+                    // Запрос списка файлов
+                    case "!getfilelist":
+                        {
+                            Stream.WriteCmd(AnsFileList());
+                        }
+                        break;
+
+                    // Запрос свободного файлового сервера для закачки
+                    case "!getfreefileserver":
+                        {
+                            Stream.WriteCmd(AnsFreeFileServer());
+                        }
+                        break;
+
+                    // Запрос файлового сервера для скачки
+                    case "!getfileserver":
+                        {
+                            Stream.WriteCmd(AnsFileServer(Cmd.parameters));
+                        }
+                        break;
+
+                    default:
+                        {
+                            Stream.WriteCmd(CreateCommand("!unknowncommand", 
+                                "К сожалению сервер не знает такой команды"));
+                        }
+                        break;
+                }
+            }
+            catch(Exception ex)
+            {
+                Debug.WriteLine(" > Server. Ошибка: " + ex.Message);
+            }
+        }
+
 
 
         /// <summary>
@@ -111,119 +296,88 @@ namespace MsgServer
         /// </summary>
         private void StartServer()
         {
+            bool isIsolated = !ConnectToDispatcher();
+
+            m_MainListenThread = new Thread(MainListenThreadFunc);
+            m_MainListenThread.Start();
+
+            lblStatus.Text = isIsolated ? "автономно" : "подключен";
         }
+
+
 
         /// <summary>
         /// Останавливает работу сервера
         /// </summary>
         private void StopServer()
         {
+            if (m_MainListenThread != null)
+                m_MainListenThread.Abort();
+
+            m_Listener.Stop();
+
+            lstClients.Items.Clear();
+            lstServers.Items.Clear();
+
+            lblStatus.Text = "отключен";
         }
 
 
-        ///// <summary>
-        ///// Подключиться к диспетчеру
-        ///// </summary>
-        ///// <returns>удачно ли</returns>
-        //private bool ConnectToDispatcher()
-        //{
-        //    MessageBox.Show("Не удалось подключиться к диспетчеру.\n" +
-        //                    "Сервер работает в автономном режиме.\n" +
-        //                    "Порт сервера: " + serverPort.ToString());
-        //    return false;
-        //}
+
+        /// <summary>
+        /// Подключиться к диспетчеру
+        /// </summary>
+        /// <returns>true - удачно</returns>
+        private bool ConnectToDispatcher()
+        {
+            MessageBox.Show("Не удалось подключиться к диспетчеру.\n" +
+                            "Сервер работает в автономном режиме.\n" +
+                            "Порт сервера: " + m_ServerPort.ToString());
+            return false;
+        }
 
 
+        /// <summary>
+        /// Находит клиента по имени в списке
+        /// </summary>
+        /// <param name="name">имя клиента</param>
+        /// <returns>экземпляр класса клиента</returns>
+        private ClientItem FindClient(string name)
+        {
+            lock (m_ClientList)
+            {
+                for (int i = 0; i < m_ClientList.Count; i++)
+                {
+                    if (m_ClientList[i].GetName() == name)
+                        return m_ClientList[i];
+                }
+                return null;
+            }
+        }
 
-        ///// <summary>
-        ///// Отключиться от диспетчера
-        ///// </summary>
-        //private void DisconnectToDispatcher()
-        //{
-        //}
-
-
-
-        ///// <summary>
-        ///// Запустить сервер
-        ///// </summary>
-        //private void StartServer()
-        //{
-        //    if (state == ServerState.Running)
-        //        return;
-
-        //    state = ServerState.Running;
-
-        //    isIsolated = !ConnectToDispatcher();
-
-        //    mainMsgThread = new Thread(MainMsgFunc);
-        //    mainMsgThread.Start();
-
-        //    lblStatus.Text = isIsolated ? "автономно" : "подключен";
-        //}
-
-        ///// <summary>
-        ///// Отключить сервер
-        ///// </summary>
-        //private void StopServer()
-        //{
-        //    if (state == ServerState.Stopped)
-        //        return;
-
-        //    state = ServerState.Stopped;
-
-        //    isIsolated = true;
-        //    DisconnectToDispatcher();
-
-        //    if (mainMsgThread != null)
-        //        mainMsgThread.Abort();
-
-        //    listener.Stop();
-
-        //    lstClients.Items.Clear();
-        //    lstServers.Items.Clear();
-
-        //    lblStatus.Text = "отключен";
-        //}
+        /// <summary>
+        /// Добавить нового клиента
+        /// </summary>
+        /// <param name="tcp">tcp клиента</param>
+        private bool AddClient(string name, string ip, int port)
+        {
+            lock (m_ClientList)
+            {
+                m_ClientList.Add(new ClientItem(name, ip, port));
+            }
+            return true;
+        }
 
 
-
-        ///// <summary>
-        ///// Добавить нового клиента
-        ///// </summary>
-        ///// <param name="tcp">tcp клиента</param>
-        //private void AddClient(TcpClient tcp)
-        //{
-        //    ClientItem client = new ClientItem(tcp);
-        //    lock (сlientList)
-        //    {
-        //        сlientList.Add(client);
-
-        //        // Подписываемся на события клиента
-        //        client.SendTextToAll        += SendTextToAll;
-        //        client.GetClientList        += GetClientList;
-        //        client.GetFileList          += GetFileList;
-        //        client.GetFileServer        += GetFileServer;
-        //        client.GetFreeFileServer    += GetFreeFileServer;
-        //        client.IsContaind           += IsContained;
-        //        client.WriteLog             += WriteLog;
-
-        //        client.StartServe();
-        //    }
-        //}
-
-        ///// <summary>
-        ///// Прослушивает порт на наличие новых подключений
-        ///// </summary>
-        //private void MainMsgFunc()
-        //{
-        //    listener.Start();
-        //    while (true)
-        //    {
-        //        TcpClient tcp = listener.AcceptTcpClient();
-        //        AddClient(tcp);
-        //    }
-        //}
+        private bool DeleteClient(string name)
+        {
+            ClientItem Client = FindClient(name);
+            lock (m_ClientList)
+            {
+                m_ClientList.Remove(Client);
+            }
+            return true;
+        }
 
         ///// <summary>
         ///// Послать текстовое сообщение всем клиентам
