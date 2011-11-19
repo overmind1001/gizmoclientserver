@@ -722,7 +722,7 @@ namespace Dispatcher
             {    
                 for (int i = 0; i < MsgServers.Count; i++)
                 {
-                    line += MsgServers[i].Ip + " " + MsgServers[i].Port.ToString();
+                    line += MsgServers[i].Ip + " " + MsgServers[i].Port.ToString();//TODO посылать список каналов
                     if (i != MsgServers.Count - 1)
                         line += "|";
                 }
