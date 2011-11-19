@@ -823,8 +823,7 @@ namespace Dispatcher
             {
                 s.SendTo(sendbuf, ep);
                 Thread.Sleep(1000);
-            }
-            
+            }            
         }
 
         private void DispatcherForm_FormClosing(object sender, FormClosingEventArgs e)

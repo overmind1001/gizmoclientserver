@@ -37,9 +37,13 @@
             this.m_tab = new System.Windows.Forms.TabControl();
             this.m_pageFiles = new System.Windows.Forms.TabPage();
             this.m_tabLog = new System.Windows.Forms.TabPage();
+            this.m_tbLog = new System.Windows.Forms.TextBox();
+            this.m_lbFiles = new System.Windows.Forms.ListBox();
             this.m_mainMenuStrip.SuspendLayout();
             this.m_statusStrip.SuspendLayout();
             this.m_tab.SuspendLayout();
+            this.m_pageFiles.SuspendLayout();
+            this.m_tabLog.SuspendLayout();
             this.SuspendLayout();
             // 
             // m_mainMenuStrip
@@ -48,7 +52,7 @@
             this.m_menuServer});
             this.m_mainMenuStrip.Location = new System.Drawing.Point(0, 0);
             this.m_mainMenuStrip.Name = "m_mainMenuStrip";
-            this.m_mainMenuStrip.Size = new System.Drawing.Size(433, 24);
+            this.m_mainMenuStrip.Size = new System.Drawing.Size(429, 24);
             this.m_mainMenuStrip.TabIndex = 0;
             this.m_mainMenuStrip.Text = "menuStrip1";
             // 
@@ -64,14 +68,14 @@
             // m_menuRun
             // 
             this.m_menuRun.Name = "m_menuRun";
-            this.m_menuRun.Size = new System.Drawing.Size(152, 22);
+            this.m_menuRun.Size = new System.Drawing.Size(120, 22);
             this.m_menuRun.Text = "Поднять";
             this.m_menuRun.Click += new System.EventHandler(this.m_menuRun_Click);
             // 
             // m_menuStop
             // 
             this.m_menuStop.Name = "m_menuStop";
-            this.m_menuStop.Size = new System.Drawing.Size(152, 22);
+            this.m_menuStop.Size = new System.Drawing.Size(120, 22);
             this.m_menuStop.Text = "Уронить";
             this.m_menuStop.Click += new System.EventHandler(this.m_menuStop_Click);
             // 
@@ -79,9 +83,9 @@
             // 
             this.m_statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.m_statusLabel});
-            this.m_statusStrip.Location = new System.Drawing.Point(0, 306);
+            this.m_statusStrip.Location = new System.Drawing.Point(0, 316);
             this.m_statusStrip.Name = "m_statusStrip";
-            this.m_statusStrip.Size = new System.Drawing.Size(433, 22);
+            this.m_statusStrip.Size = new System.Drawing.Size(429, 22);
             this.m_statusStrip.TabIndex = 1;
             this.m_statusStrip.Text = "statusStrip1";
             // 
@@ -99,34 +103,54 @@
             this.m_tab.Location = new System.Drawing.Point(0, 24);
             this.m_tab.Name = "m_tab";
             this.m_tab.SelectedIndex = 0;
-            this.m_tab.Size = new System.Drawing.Size(433, 282);
+            this.m_tab.Size = new System.Drawing.Size(429, 292);
             this.m_tab.TabIndex = 2;
             // 
             // m_pageFiles
             // 
+            this.m_pageFiles.Controls.Add(this.m_lbFiles);
             this.m_pageFiles.Location = new System.Drawing.Point(4, 22);
             this.m_pageFiles.Name = "m_pageFiles";
             this.m_pageFiles.Padding = new System.Windows.Forms.Padding(3);
-            this.m_pageFiles.Size = new System.Drawing.Size(425, 256);
+            this.m_pageFiles.Size = new System.Drawing.Size(421, 266);
             this.m_pageFiles.TabIndex = 0;
             this.m_pageFiles.Text = "Файлы";
             this.m_pageFiles.UseVisualStyleBackColor = true;
             // 
             // m_tabLog
             // 
+            this.m_tabLog.Controls.Add(this.m_tbLog);
             this.m_tabLog.Location = new System.Drawing.Point(4, 22);
             this.m_tabLog.Name = "m_tabLog";
             this.m_tabLog.Padding = new System.Windows.Forms.Padding(3);
-            this.m_tabLog.Size = new System.Drawing.Size(425, 256);
+            this.m_tabLog.Size = new System.Drawing.Size(421, 266);
             this.m_tabLog.TabIndex = 1;
             this.m_tabLog.Text = "Журнал";
             this.m_tabLog.UseVisualStyleBackColor = true;
+            // 
+            // m_tbLog
+            // 
+            this.m_tbLog.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.m_tbLog.Location = new System.Drawing.Point(3, 3);
+            this.m_tbLog.Multiline = true;
+            this.m_tbLog.Name = "m_tbLog";
+            this.m_tbLog.Size = new System.Drawing.Size(415, 260);
+            this.m_tbLog.TabIndex = 0;
+            // 
+            // m_lbFiles
+            // 
+            this.m_lbFiles.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.m_lbFiles.FormattingEnabled = true;
+            this.m_lbFiles.Location = new System.Drawing.Point(3, 3);
+            this.m_lbFiles.Name = "m_lbFiles";
+            this.m_lbFiles.Size = new System.Drawing.Size(415, 260);
+            this.m_lbFiles.TabIndex = 0;
             // 
             // FileServerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(433, 328);
+            this.ClientSize = new System.Drawing.Size(429, 338);
             this.Controls.Add(this.m_tab);
             this.Controls.Add(this.m_statusStrip);
             this.Controls.Add(this.m_mainMenuStrip);
@@ -138,6 +162,9 @@
             this.m_statusStrip.ResumeLayout(false);
             this.m_statusStrip.PerformLayout();
             this.m_tab.ResumeLayout(false);
+            this.m_pageFiles.ResumeLayout(false);
+            this.m_tabLog.ResumeLayout(false);
+            this.m_tabLog.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -154,6 +181,8 @@
         private System.Windows.Forms.TabControl m_tab;
         private System.Windows.Forms.TabPage m_pageFiles;
         private System.Windows.Forms.TabPage m_tabLog;
+        private System.Windows.Forms.ListBox m_lbFiles;
+        private System.Windows.Forms.TextBox m_tbLog;
     }
 }
 

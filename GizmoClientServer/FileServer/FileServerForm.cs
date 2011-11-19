@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using Dispatcher;
 
 namespace FileServer
 {
@@ -32,8 +33,7 @@ namespace FileServer
 
         private void m_menuRun_Click(object sender, EventArgs e)
         {
-            if (RunServer())
-            {
+            if (RunServer()) {
                 m_menuRun.Enabled = false;
                 m_menuStop.Enabled = true;
             }
@@ -41,7 +41,10 @@ namespace FileServer
 
         private void m_menuStop_Click(object sender, EventArgs e)
         {
-            StopServer();
+            if (StopServer()) {
+                m_menuRun.Enabled = true;
+                m_menuStop.Enabled = false;
+            }
         }
     }
 }
