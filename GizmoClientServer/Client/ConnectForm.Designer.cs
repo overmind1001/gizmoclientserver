@@ -78,7 +78,7 @@
             // 
             this.numericUpDownPort.Location = new System.Drawing.Point(248, 147);
             this.numericUpDownPort.Maximum = new decimal(new int[] {
-            10000,
+            65534,
             0,
             0,
             0});
