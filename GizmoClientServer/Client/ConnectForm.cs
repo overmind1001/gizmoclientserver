@@ -148,5 +148,21 @@ namespace Client
                 //this.DialogResult=DialogResult.Cancel;
             }
         }
+
+        private void btnRecieveBroadcastAddr_Click(object sender, EventArgs e)
+        {
+            // Sends a message to a different host using optional hostname and port parameters.
+            UdpClient udpClient = new UdpClient(11000);
+
+            //IPEndPoint object will allow us to read datagrams sent from any source.
+            IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 11000);
+
+            // Blocks until a message returns on this socket from a remote host.
+            Byte[] receiveBytes = udpClient.Receive(ref RemoteIpEndPoint);
+            string returnData = Encoding.ASCII.GetString(receiveBytes);
+
+            tbIp.Text = returnData;
+            udpClient.Close();
+        }
     }
 }

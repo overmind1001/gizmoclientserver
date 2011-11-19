@@ -860,6 +860,7 @@ namespace Dispatcher
             IPAddress tail = IPAddress.Parse("0.0.0.255");
 
             broadcast.Address = broadcast.Address | tail.Address;
+            broadcast.Address = IPAddress.Loopback.Address;///
             
             byte[] sendbuf = Encoding.ASCII.GetBytes(Dns.GetHostName());
             IPEndPoint ep = new IPEndPoint(broadcast, 11000);

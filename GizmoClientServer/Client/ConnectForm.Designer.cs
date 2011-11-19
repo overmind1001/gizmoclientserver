@@ -35,12 +35,13 @@
             this.numericUpDownPort = new System.Windows.Forms.NumericUpDown();
             this.tbName = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
+            this.btnRecieveBroadcastAddr = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPort)).BeginInit();
             this.SuspendLayout();
             // 
             // butConnect
             // 
-            this.butConnect.Location = new System.Drawing.Point(115, 146);
+            this.butConnect.Location = new System.Drawing.Point(116, 189);
             this.butConnect.Name = "butConnect";
             this.butConnect.Size = new System.Drawing.Size(93, 23);
             this.butConnect.TabIndex = 0;
@@ -50,7 +51,7 @@
             // 
             // tbIp
             // 
-            this.tbIp.Location = new System.Drawing.Point(36, 108);
+            this.tbIp.Location = new System.Drawing.Point(39, 148);
             this.tbIp.Name = "tbIp";
             this.tbIp.Size = new System.Drawing.Size(202, 20);
             this.tbIp.TabIndex = 1;
@@ -58,7 +59,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(36, 89);
+            this.label1.Location = new System.Drawing.Point(39, 129);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(17, 13);
             this.label1.TabIndex = 2;
@@ -67,7 +68,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(241, 89);
+            this.label2.Location = new System.Drawing.Point(244, 129);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(32, 13);
             this.label2.TabIndex = 2;
@@ -75,7 +76,7 @@
             // 
             // numericUpDownPort
             // 
-            this.numericUpDownPort.Location = new System.Drawing.Point(245, 107);
+            this.numericUpDownPort.Location = new System.Drawing.Point(248, 147);
             this.numericUpDownPort.Maximum = new decimal(new int[] {
             10000,
             0,
@@ -101,17 +102,28 @@
             this.label3.TabIndex = 2;
             this.label3.Text = "Ваше имя:";
             // 
+            // btnRecieveBroadcastAddr
+            // 
+            this.btnRecieveBroadcastAddr.Location = new System.Drawing.Point(39, 83);
+            this.btnRecieveBroadcastAddr.Name = "btnRecieveBroadcastAddr";
+            this.btnRecieveBroadcastAddr.Size = new System.Drawing.Size(199, 23);
+            this.btnRecieveBroadcastAddr.TabIndex = 0;
+            this.btnRecieveBroadcastAddr.Text = "Определить адрес автоматически";
+            this.btnRecieveBroadcastAddr.UseVisualStyleBackColor = true;
+            this.btnRecieveBroadcastAddr.Click += new System.EventHandler(this.btnRecieveBroadcastAddr_Click);
+            // 
             // ConnectForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(325, 191);
+            this.ClientSize = new System.Drawing.Size(330, 227);
             this.Controls.Add(this.numericUpDownPort);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.tbName);
             this.Controls.Add(this.tbIp);
+            this.Controls.Add(this.btnRecieveBroadcastAddr);
             this.Controls.Add(this.butConnect);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
@@ -132,5 +144,6 @@
         public System.Windows.Forms.NumericUpDown numericUpDownPort;
         public System.Windows.Forms.TextBox tbName;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Button btnRecieveBroadcastAddr;
     }
 }
