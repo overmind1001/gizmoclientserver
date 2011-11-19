@@ -31,6 +31,8 @@
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.lblStatus = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.lblPort = new System.Windows.Forms.ToolStripStatusLabel();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.серверToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.поднятьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -45,8 +47,6 @@
             this.lstServers = new System.Windows.Forms.ListBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.lstLog = new System.Windows.Forms.ListBox();
-            this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.lblPort = new System.Windows.Forms.ToolStripStatusLabel();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
@@ -86,6 +86,18 @@
             this.lblStatus.Size = new System.Drawing.Size(62, 17);
             this.lblStatus.Text = "отключен";
             // 
+            // toolStripStatusLabel2
+            // 
+            this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
+            this.toolStripStatusLabel2.Size = new System.Drawing.Size(38, 17);
+            this.toolStripStatusLabel2.Text = "Порт:";
+            // 
+            // lblPort
+            // 
+            this.lblPort.Name = "lblPort";
+            this.lblPort.Size = new System.Drawing.Size(12, 17);
+            this.lblPort.Text = "-";
+            // 
             // menuStrip1
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -110,12 +122,14 @@
             this.поднятьToolStripMenuItem.Name = "поднятьToolStripMenuItem";
             this.поднятьToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
             this.поднятьToolStripMenuItem.Text = "Поднять";
+            this.поднятьToolStripMenuItem.Click += new System.EventHandler(this.поднятьToolStripMenuItem_Click);
             // 
             // уронитьToolStripMenuItem
             // 
             this.уронитьToolStripMenuItem.Name = "уронитьToolStripMenuItem";
             this.уронитьToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
             this.уронитьToolStripMenuItem.Text = "Уронить";
+            this.уронитьToolStripMenuItem.Click += new System.EventHandler(this.уронитьToolStripMenuItem_Click);
             // 
             // tabControl1
             // 
@@ -229,20 +243,8 @@
             this.lstLog.FormattingEnabled = true;
             this.lstLog.Location = new System.Drawing.Point(3, 3);
             this.lstLog.Name = "lstLog";
-            this.lstLog.Size = new System.Drawing.Size(564, 307);
+            this.lstLog.Size = new System.Drawing.Size(541, 317);
             this.lstLog.TabIndex = 0;
-            // 
-            // toolStripStatusLabel2
-            // 
-            this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
-            this.toolStripStatusLabel2.Size = new System.Drawing.Size(38, 17);
-            this.toolStripStatusLabel2.Text = "Порт:";
-            // 
-            // lblPort
-            // 
-            this.lblPort.Name = "lblPort";
-            this.lblPort.Size = new System.Drawing.Size(13, 17);
-            this.lblPort.Text = "0";
             // 
             // MsgServerForm
             // 
@@ -256,6 +258,8 @@
             this.MinimumSize = new System.Drawing.Size(500, 300);
             this.Name = "MsgServerForm";
             this.Text = "Сервер сообщений";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MsgServerForm_FormClosed);
+            this.Load += new System.EventHandler(this.MsgServerForm_Load);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
             this.menuStrip1.ResumeLayout(false);

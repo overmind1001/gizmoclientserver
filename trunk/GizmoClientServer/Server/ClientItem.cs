@@ -22,21 +22,31 @@ namespace MsgServer
     {
 
         private string m_Name;
-        private IPAddress m_IPAddress;
+        private string m_IPAddress;
         private int m_Port;
 
         public ClientItem(string name, string ip, int port)
         {
             m_Name = name;
-            m_IPAddress = Dns.GetHostEntry(ip).AddressList[0];
+            m_IPAddress = ip;
             m_Port = port;
         }
-
 
         public string GetName()
         {
             return m_Name;
         }
+
+        public string GetIP()
+        {
+            return m_IPAddress;
+        }
+
+        public int GetPort()
+        {
+            return m_Port;
+        }
+
 
 
 
