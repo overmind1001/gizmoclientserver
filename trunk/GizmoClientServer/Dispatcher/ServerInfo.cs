@@ -11,8 +11,9 @@ namespace Dispatcher
     {
         public string Ip {get;set;}
         public int Port { get; set; }
-        public TcpClient tcpClient { get; set; }
-        public ChannelLock channelLock { get; set; }
+        public string MailSlot { get; set; }
+        //public TcpClient tcpClient { get; set; }
+        //public ChannelLock channelLock { get; set; }
 
         public DateTime lastPingTime { get; set; }
         public List<ClientInfo> clientInfos { get; set; }   //ссылки на клиентов сервера
