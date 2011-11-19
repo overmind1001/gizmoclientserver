@@ -14,9 +14,6 @@ using System.Diagnostics;
 
 namespace Dispatcher
 {
-  
-    
-
     public partial class DispatcherForm : Form
     {
         //делегаты
@@ -26,7 +23,7 @@ namespace Dispatcher
         public MyListChangedHandler ClientsListChanged;
         public MyListChangedHandler FilesListChanged;
         
-
+        //Списки
         List<ServerInfo> MsgServers;
         List<ServerInfo> FileServers;
         List<ClientInfo> Clients;
@@ -510,8 +507,6 @@ namespace Dispatcher
                                         cmd = "!registered"
                                     };
                                     netStream.WriteCmd(registredCmd);
-                                    
-                                    
                                 }
                                 else
                                 {
@@ -602,16 +597,33 @@ namespace Dispatcher
                                         }
                                     }
                                 }
-                                //TODO надо будет сделать для файл сервера
-                                NetCommand pongCmd = new NetCommand()
+                                if (command.sender == "fileserver")
                                 {
-                                    Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
-                                    Port = 501,
-                                    sender = "dispatcher",
-                                    cmd = "!pong",
-                                    parameters = ""
-                                };
-                                netStream.WriteCmd(pongCmd);
+                                    lock (FileServers)
+                                    {
+                                        ServerInfo si = FileServers.Find((ServerInfo s) => { return (s.Ip == command.Ip && s.Port == command.Port); });
+                                        if (si != null)
+                                        {
+                                            si.lastPingTime = DateTime.Now;
+                                        }
+                                        else
+                                        {
+                                            MessageBox.Show("Пингующий файл сервер  не найден!", "Так быть не должно");
+                                        }
+                                    }
+                                }
+                                if ((command.sender == "msgserver") || (command.sender == "fileserver"))
+                                {
+                                    NetCommand pongCmd = new NetCommand()
+                                    {
+                                        Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                                        Port = 501,
+                                        sender = "dispatcher",
+                                        cmd = "!pong",
+                                        parameters = ""
+                                    };
+                                    netStream.WriteCmd(pongCmd);
+                                }
                                 break;
                             case "!getfileserver":
                                 //////////////////////////////////////TODO
@@ -676,7 +688,7 @@ namespace Dispatcher
                 FilesListChanged();
             }
         }
-        bool AddServer(string type, string ip, int port,out ServerInfo serv)//??
+        bool AddServer(string type, string ip, int port,out ServerInfo serv)//TODO добавление информации о меилслоте
         {
             string serverRecord = type+"_"+ip.ToString()+"_"+port;
             ServerInfo serverInfo = new ServerInfo();
