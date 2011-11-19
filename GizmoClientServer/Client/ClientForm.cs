@@ -52,6 +52,8 @@ namespace Client
             ClearPeopleD += ClearPeople;
             ClearFilesD += ClearFiles;
         }
+
+#region Вывод информации на GUI
         void WriteMessage(string message)
         {
             this.tbChat.Text += message + Environment.NewLine;
@@ -80,7 +82,7 @@ namespace Client
         {
             lbFilesList.Items.Clear();
         }
-        
+#endregion
 
         private void ПодключитьсяtoolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -91,7 +93,6 @@ namespace Client
                 return;
             }
             ////////////тут загружаем список контактов и т.д.
-
             
             this.TcpListener= cf.tcpListener;
             ListenerPort = cf.MyPort;
@@ -125,7 +126,9 @@ namespace Client
             //t.Start(tcpClient);
         }
 
-        //поток для приема входящих соединений
+        /// <summary>
+        /// Поток для приема входящих соединений
+        /// </summary>
         void TcpListenerThread()
         {
             while (true)
@@ -134,7 +137,6 @@ namespace Client
                 ThreadPool.QueueUserWorkItem(Listen,tcpClient);
             }
         }
-
 
         private void Listen(Object tcpCliento)//обработка команды
         {
@@ -197,16 +199,15 @@ namespace Client
                         default:
                             MessageBox.Show("неизвестная команда!");
                             break;
-
                     }
                 }
                 catch (IOException ex)
                 {
                     System.Diagnostics.Debug.WriteLine("Client. за 20 сек сервер ничего не сказал");
-                }
-                
+                }                
             }
         }
+
         //регистрация на сервере (через диспетчер или напрямую)
         private bool registerMe(NetStreamReaderWriter ns,string name)
         {
@@ -228,13 +229,9 @@ namespace Client
             NetCommand ansRegisterCmd = ns.ReadCmd();
             //string answer = sr.ReadLine();
 
-            if (ansRegisterCmd.cmd == "!registred")
-            {
-                return true;
-            }
-            else
-                return false;
+            return (ansRegisterCmd.cmd == "!registred");
         }
+
         //получение контакт листа
         private void AsyncGetContactListFromServer()
         {
@@ -453,8 +450,6 @@ namespace Client
             if (name == string.Empty)
                 return;
             AsyncSendMessage(tbMessage.Text);
-           
-
         }
     }
 }
