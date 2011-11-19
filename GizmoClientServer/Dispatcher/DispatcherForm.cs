@@ -630,6 +630,52 @@ namespace Dispatcher
                 }
             }
         }
+        void AsyncGetFileList(string ip,int port)//асинхронное получение списка файлов
+        {
+            Thread t = new Thread(() =>
+            {
+                try
+                {
+                    TcpClient tcpClient = new TcpClient(ip, port);
+                    NetStreamReaderWriter nsrw = new NetStreamReaderWriter(tcpClient.GetStream());
+                    getFileList(nsrw);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Dispatcher. "+ex.Message);
+                }
+
+            });
+            t.Start();
+        }
+        void getFileList(NetStreamReaderWriter stream)
+        {
+            NetCommand getFileListCmd = new NetCommand()
+            {
+                Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                Port = 501,
+                sender = "dispatcher",
+                cmd = "!getfilelist",
+                parameters = ""
+            };
+            stream.WriteCmd(getFileListCmd);
+
+            NetCommand ansGetFilelist = stream.ReadCmd();
+
+            if (ansGetFilelist.cmd != "!filelist")
+                return;
+            string filesStr = ansGetFilelist.parameters;
+
+            string[] filesList = filesStr.Split(new char[]{'|'});
+            lock (Files)
+            {
+                foreach (string f in filesList)
+                {
+                    Files.Add(new FileInfo() {Filename=f });
+                }
+                FilesListChanged();
+            }
+        }
         bool AddServer(string type, string ip, int port,out ServerInfo serv)//??
         {
             string serverRecord = type+"_"+ip.ToString()+"_"+port;
@@ -655,7 +701,7 @@ namespace Dispatcher
                     parameters = string.Format("{0} {1}", ip, port)
                 };
                 SendCmdToAllServers(serverregisteredCmd);
-                //TODO Запросить список клиентов
+                //TODO Запросить список клиентов, хотя не надо, т.к. на сервере еще нет клиентов
             }
             else
             {
@@ -664,10 +710,8 @@ namespace Dispatcher
                     FileServers.Add(serverInfo);
                 }
                 FileServerListChanged();//обновление списка файлов на сервере
-
-                //TODO Запросить список файлов
+                AsyncGetFileList(ip, port);//получить список файлов
             }
-
             return true;
         }
         void SendServerList(Stream stream)//в ответ
