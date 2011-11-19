@@ -40,6 +40,7 @@ namespace Client
 
         string name;
 
+
         public ClientForm()
         {
             InitializeComponent();
@@ -111,6 +112,9 @@ namespace Client
             //регистрируемся на сервере
             if (!registerMe(nsrw, cf.tbName.Text))
                 return;
+            //запускаем поток пинга
+            AsyncStartPing();
+
             //загружаем список контактов
 
             //эти операции асинхронные
@@ -231,7 +235,40 @@ namespace Client
 
             return (ansRegisterCmd.cmd == "!registred");
         }
-
+        //Пингование
+        void AsyncStartPing()
+        {
+            Thread t = new Thread(() =>
+                {
+                    try
+                    {
+                        while (true)
+                        {
+                            TcpClient tcpClient = new TcpClient(serverIp, serverPort);
+                            NetStreamReaderWriter nsrw = new NetStreamReaderWriter(tcpClient.GetStream());
+                            nsrw.ReadTimeout = 5000;
+                            NetCommand pingCmd = new NetCommand()
+                            {
+                                Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                                Port = ListenerPort,
+                                sender = name,//пока что безымянный
+                                cmd = "!ping",
+                                parameters = ""
+                            };
+                            nsrw.WriteCmd(pingCmd);
+                            NetCommand ansPing = nsrw.ReadCmd();
+                            if (ansPing.cmd != "!pong")
+                                MessageBox.Show("Client. В ответ на пинг пришла хрень");
+                            tcpClient.Close();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Client. Сервер не отвечает на пинг");
+                    }
+                });
+            t.Start();
+        }
         //получение контакт листа
         private void AsyncGetContactListFromServer()
         {
