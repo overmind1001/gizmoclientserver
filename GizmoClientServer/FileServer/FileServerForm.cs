@@ -14,18 +14,29 @@ namespace FileServer
         public FileServerForm()
         {
             InitializeComponent();
+            RunServer();
+        }
+
+        protected void RunServer()
+        {
+
+        }
+
+        protected void StopServer()
+        {
+
         }
 
         //Поднять сервер
         private void m_menuRun_Click(object sender, EventArgs e)
         {
-
+            RunServer();
         }
 
         //Уронить сервер
         private void m_menuStop_Click(object sender, EventArgs e)
         {
-
+            StopServer();
         }
     }
 }
