@@ -48,7 +48,7 @@ namespace Client
             InitializeComponent();
 
             //IPAddress[] addrlist = Dns.GetHostAddresses(Dns.GetHostName());
-            myIp = Dns.GetHostAddresses(Dns.GetHostName())[3];
+            //myIp = Dns.GetHostAddresses(Dns.GetHostName())[3];
 
             WriteMessageD += WriteMessage;
             AddManD += AddMan;
