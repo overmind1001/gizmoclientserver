@@ -135,6 +135,7 @@ namespace MsgServer
                     // Регистрация и анрегистрация клиентов
                     case "!clientregistered":
                     case "!clientunregistered":
+                        Stream.WriteCmd(CreateCommand("!ok", "Вас понял!"));
                         NetCommand CloneCmd = Cmd.Clone();
                         CloneCmd.Ip = m_ServerIP.ToString();
                         CloneCmd.Port = m_ServerPort;

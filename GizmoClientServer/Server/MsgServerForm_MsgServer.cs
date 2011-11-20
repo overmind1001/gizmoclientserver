@@ -32,7 +32,7 @@ namespace MsgServer
                     // Принимает сообщение
                     case "!message":
                         {
-                            Stream.WriteCmd(CreateCommand("!ok", ""));
+                            Stream.WriteCmd(CreateCommand("!ok", "Вас понял!"));
                             UiWriteLog(Cmd.parameters);
                             SendMsgToAllClients("!msgserver", Cmd.parameters);
                         }
