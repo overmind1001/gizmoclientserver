@@ -566,6 +566,7 @@ namespace MsgServer
             lock (lstLog)
             {
                 lstLog.Items.Add(" > " + msg);
+                lstLog.Top = lstLog.Items.Count - 1;
             }
         }
 
@@ -606,6 +607,7 @@ namespace MsgServer
             lock (lstClients)
             {
                 lstClients.Items.Add(name);
+                lstClients.Top = lstClients.Items.Count - 1;
             }
         }
 
@@ -649,6 +651,7 @@ namespace MsgServer
             lock (lstServers)
             {
                 lstServers.Items.Add(ip + ":" + port);
+                lstServers.Top = lstServers.Items.Count - 1;
             }
         }
 
