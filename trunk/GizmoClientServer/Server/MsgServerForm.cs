@@ -125,6 +125,12 @@ namespace MsgServer
             m_ServerPort = GetFreeListenerPort(out m_Listener, m_ServerIP);
             m_IsIsolated = !ConnectToDispatcher();
 
+            if (!m_IsIsolated)
+            {
+                m_DispatcherPingThread = new Thread(DispatcherPingThreadFunc);
+                m_DispatcherPingThread.Start();
+            }
+
             if(m_Listener != null)
                 m_Listener.Start();
 
@@ -204,9 +210,6 @@ namespace MsgServer
                 }
                 else
                 {
-                    m_DispatcherPingThread = new Thread(DispatcherPingThreadFunc);
-                    m_DispatcherPingThread.Start();
-
                     string ServerList = 
                         SendCommand("!getserverlist", "Дай другие сервера!", m_DispatcherIP, m_DispatcherPort).parameters;
                     ParseServerList(ServerList);
@@ -221,9 +224,6 @@ namespace MsgServer
 
             if (!retn)
             {
-                if (m_DispatcherPingThread != null)
-                    m_DispatcherPingThread.Abort();
-
                 UiWriteLog(""); 
                 UiWriteLog("Не удалось подключиться к диспетчеру");
                 UiWriteLog("Сервер работает в автономном режиме");
