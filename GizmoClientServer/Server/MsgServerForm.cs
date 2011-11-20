@@ -399,6 +399,9 @@ namespace MsgServer
         {
             lock (m_ClientsList)
             {
+                return m_ClientsList.Find((ClientItem it) => { return it.GetName() == name; });//так круче
+
+
                 for (int i = 0; i < m_ClientsList.Count; i++)
                 {
                     if (m_ClientsList[i].GetName() == name)

@@ -12,6 +12,7 @@ using System.IO;
 using System.IO.Pipes;
 using Dispatcher;
 using System.Net;
+using System.Diagnostics;
 
 namespace Client
 {
@@ -31,14 +32,14 @@ namespace Client
         public ClearHandler ClearPeopleD;
         public ClearHandler ClearFilesD;
 
-        //TcpClient tcpClient;
-        string serverIp;
+        //адрес сервера
+        string serverIp;    
         int serverPort;
 
         TcpListener TcpListener=null;
-        int ListenerPort;
+        int ListenerPort;   //прослушиваемый порт
 
-        string name;
+        string name;        //имя клиента
 
 
         public ClientForm()
@@ -55,6 +56,7 @@ namespace Client
         }
 
 #region Вывод информации на GUI
+        //из другого потока напрямую не вызывать
         void WriteMessage(string message)
         {
             this.tbChat.Text += message + Environment.NewLine;
@@ -93,8 +95,6 @@ namespace Client
             {//не подключились
                 return;
             }
-            ////////////тут загружаем список контактов и т.д.
-            
             this.TcpListener= cf.tcpListener;
             ListenerPort = cf.MyPort;
             serverIp = cf.tbIp.Text;
@@ -107,7 +107,6 @@ namespace Client
 
             TcpClient tcpClient = cf.tcpClient;
             NetStreamReaderWriter nsrw = new NetStreamReaderWriter(tcpClient.GetStream());
-            //NetworkStream ns = tcpClient.GetStream();
 
             //регистрируемся на сервере
             if (!registerMe(nsrw, cf.tbName.Text))
@@ -115,19 +114,11 @@ namespace Client
             //запускаем поток пинга
             AsyncStartPing();
 
-            //загружаем список контактов
-
             //эти операции асинхронные
+            //загружаем список контактов
             AsyncGetContactListFromServer();
-            //getContactListFromServer(ns);
             //загружаем список файлов
             AsyncGetFileListFromServer();
-            //getFileListFromServer(ns);
-
-
-            ////запускаем поток прослушки
-            //Thread t = new Thread(Listen);
-            //t.Start(tcpClient);
         }
 
         /// <summary>
@@ -145,28 +136,19 @@ namespace Client
         private void Listen(Object tcpCliento)//обработка команды
         {
             TcpClient tcpClient =(TcpClient) tcpCliento;
-            //NetworkStream ns = tcpClient.GetStream();
-            //StreamReader sr = new StreamReader(ns);
             NetStreamReaderWriter nsrw = new NetStreamReaderWriter(tcpClient.GetStream());
-
-            // Тут косяк. По истечению срока соединение закрывается. И при дальнейших попытках получить стрим, падение
-
-            //sr.BaseStream.ReadTimeout = 2000000;//20 сек ждем, затем снова пытаемся читать
             char[] sep = { ' ' };
             if (tcpClient.Connected)
             {
                 try
                 {
                     NetCommand command = nsrw.ReadCmd();
-                    //string cmd = sr.ReadLine();
-                    //string[] splited = cmd.Split(sep);
-
                     switch (command.cmd)
                     {
                         case "!message"://прием сообщения                            
-                            //string message = cmd.Substring(splited[0].Length);
                             string message = command.parameters;
                             WriteMessageD(message);
+
                             break;
                         case "!clientregistered":
                             //string cl = splited[1];
@@ -212,28 +194,49 @@ namespace Client
             }
         }
 
-        //регистрация на сервере (через диспетчер или напрямую)
-        private bool registerMe(NetStreamReaderWriter ns,string name)
+        private NetCommand CreateStandardCommand(string Cmd,string Sender,string Parameters)//получение стандартной команды
         {
-            //StreamWriter sw = new StreamWriter(ns);
-            //sw.AutoFlush = true;
-
-            NetCommand registerCmd = new NetCommand()
+            NetCommand cmd = new NetCommand()
             {
                 Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                 Port = ListenerPort,
-                sender = "client",//пока что безымянный
-                cmd = "!register",
-                parameters = name
+                sender = Sender,
+                cmd = Cmd,
+                parameters = Parameters
             };
-            //sw.WriteLine("!register "+name);
-            ns.WriteCmd(registerCmd);
+            return cmd;
+        }
+        private NetCommand CreateStandardAnswer()//создает команду стандартного ответа для подтверждения команд, не требующих ответа
+        {
+            return CreateStandardCommand("!ok", name, String.Empty);
+        }
+        //регистрация на сервере (через диспетчер или напрямую)
+        private bool registerMe(NetStreamReaderWriter ns,string name)
+        {
+            TcpClient tcpClient = new TcpClient(serverIp, serverPort);
+            NetStreamReaderWriter nsrw = new NetStreamReaderWriter(tcpClient.GetStream());
+            try
+            {
+                NetCommand registerCmd = new NetCommand()
+                {
+                    Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                    Port = ListenerPort,
+                    sender = "client",//пока что безымянный
+                    cmd = "!register",
+                    parameters = name
+                };
+                nsrw.WriteCmd(registerCmd);
 
-            //StreamReader sr = new StreamReader(ns);
-            NetCommand ansRegisterCmd = ns.ReadCmd();
-            //string answer = sr.ReadLine();
+                NetCommand ansRegisterCmd = ns.ReadCmd();
 
-            return (ansRegisterCmd.cmd == "!registred");
+                return (ansRegisterCmd.cmd == "!registred");
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show("Не удалось зарегистрироваться на сервере, т.к. сервер не отвечает");
+                Debug.WriteLine("Client. ClientForm. registerMe "+ex.Message);
+                return false;
+            }
         }
         //Пингование
         void AsyncStartPing()
@@ -260,6 +263,7 @@ namespace Client
                             if (ansPing.cmd != "!pong")
                                 MessageBox.Show("Client. В ответ на пинг пришла хрень");
                             tcpClient.Close();
+                            Thread.Sleep(1000);//задержка 
                         }
                     }
                     catch (Exception ex)
@@ -276,37 +280,34 @@ namespace Client
                 {
                     TcpClient tcp = new TcpClient(serverIp, serverPort);
                     NetworkStream ns = tcp.GetStream();
-                    getContactListFromServer(ns);
+                    try
+                    {
+                        getContactListFromServer(ns);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("При получении списка контактов произошла ошибка!");
+                        Debug.WriteLine("Client. ClientForm. AsyncGetContactListFromServer "+ex.Message);
+                    }
                 }
             );
             t.Start();
         }
         private void getContactListFromServer(NetworkStream ns)
         {
-            //StreamWriter sw = new StreamWriter(ns);
-            //sw.AutoFlush = true;
             NetStreamReaderWriter nsrw = new NetStreamReaderWriter(ns);
             NetCommand getClientListCmd = new NetCommand()
             {
                 Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                 Port = ListenerPort,
-                sender = name,//пока что безымянный
+                sender = name,
                 cmd = "!getclientlist",
-                parameters = name
+                parameters = ""
             };
             nsrw.WriteCmd(getClientListCmd);
-
-            //sw.WriteLine("!getclientlist");         //посылка команды
-
-            //StreamReader sr = new StreamReader(ns);
-            //string answer = sr.ReadLine();          //получение ответа
-            NetCommand ansGetClientList = nsrw.ReadCmd();
-
-            char[] sep = { '|' };
-            string[] names = ansGetClientList.parameters.Split(sep);//получили массив имен
-
-            
-            lock (lbPeople)
+            NetCommand ansGetClientList = nsrw.ReadCmd();//получение ответа
+            string[] names = ansGetClientList.parameters.Split(new char[]{'|'});//получили массив имен
+            lock (lbPeople)//работа с Ui
             {
                 ClearPeopleD();
                 foreach (String s in names)
@@ -322,37 +323,35 @@ namespace Client
             {
                 TcpClient tcp = new TcpClient(serverIp, serverPort);
                 NetworkStream ns = tcp.GetStream();
-                getFileListFromServer(ns);
+                try
+                {
+                    getFileListFromServer(ns);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("При получении списка файлов произошла ошибка!");
+                    Debug.WriteLine("Client. ClientForm. AsyncGetFileListFromServer " + ex.Message);
+                }
             }
             );
             t.Start();
         }
         private void getFileListFromServer(NetworkStream ns)
         {
-
             NetStreamReaderWriter nsrw = new NetStreamReaderWriter(ns);
             NetCommand getFileListCmd = new NetCommand()
             {
                 Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                 Port = ListenerPort,
-                sender = name,//пока что безымянный
+                sender = name,
                 cmd = "!getfilelist",
                 parameters = ""
             };
             nsrw.WriteCmd(getFileListCmd);
+            NetCommand ansGetFileList = nsrw.ReadCmd();//ответ
+            string[] files = ansGetFileList.parameters.Split(new char[]{'|'});//получили массив имен
 
-            //StreamWriter sw = new StreamWriter(ns);
-            //sw.AutoFlush = true;
-            //sw.WriteLine("!getfilelist");         //посылка команды
-
-            //StreamReader sr = new StreamReader(ns);
-            //string answer = sr.ReadLine();          //получение ответа
-            NetCommand ansGetFileList = nsrw.ReadCmd();
-
-            char[] sep = { '|' };
-            string[] files = ansGetFileList.parameters.Split(sep);//получили массив имен
-
-            lock (lbFilesList)
+            lock (lbFilesList)//Ui
             {
                 ClearFilesD();
                 foreach (String s in files)
@@ -461,15 +460,24 @@ namespace Client
             Thread t = new Thread(() =>
             {
                 TcpClient tcp = new TcpClient(serverIp, serverPort);
-                NetworkStream ns = tcp.GetStream();
-                sendMessage(ns,mes);
+                NetStreamReaderWriter nsrw = new NetStreamReaderWriter(tcp.GetStream());
+                try
+                {
+                    sendMessage(nsrw, mes);
+                    NetCommand ansMessage = nsrw.ReadCmd();
+                    if (ansMessage.cmd != "!ok")
+                        throw new Exception(" Вместо подтверждения получено что-то другое");
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine("Client. ClientForm. AsyncSendMessage."+ex.Message);
+                }
             }
             );
             t.Start();
         }
-        private void sendMessage(NetworkStream ns,string mes)
+        private void sendMessage(NetStreamReaderWriter nsrw, string mes)
         {
-            NetStreamReaderWriter nsrw = new NetStreamReaderWriter(ns);
             NetCommand messageCmd = new NetCommand()
             {
                 Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
