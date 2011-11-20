@@ -50,7 +50,7 @@ namespace MsgServer
         {
             Debug.AutoFlush         = true;//для отладки
 
-            m_ServerIP              = Dns.GetHostEntry("localhost").AddressList[0];
+            m_ServerIP              = Dns.GetHostEntry(Dns.GetHostName()).AddressList[0];
 
             m_ServersList           = new List<ServerItem>();
             m_ClientsList           = new List<ClientItem>();
@@ -81,7 +81,7 @@ namespace MsgServer
                 try
                 {
                     RandPort = Rand.Next(StartPort, EndPort);
-                    Listener = new TcpListener(IPAddr, RandPort);
+                    Listener = new TcpListener(IPAddress.Parse("178.47.93.187"), RandPort);
 
                     Listener.Start();
                     Listener.Stop();
@@ -114,6 +114,7 @@ namespace MsgServer
             m_MainListenThread.Start();
 
             lblStatus.Text = isIsolated ? "автономно" : "подключен";
+            lblIP.Text = m_ServerIP.ToString();
         }
 
         /// <summary>
@@ -132,6 +133,7 @@ namespace MsgServer
 
             lblStatus.Text = "отключен";
             lblPort.Text = "-";
+            lblIP.Text = "-";
         }
 
         /// <summary>
