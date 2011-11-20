@@ -125,7 +125,9 @@ namespace MsgServer
             m_ServerPort = GetFreeListenerPort(out m_Listener, m_ServerIP);
             m_IsIsolated = !ConnectToDispatcher();
 
-            m_Listener.Start();
+            if(m_Listener != null)
+                m_Listener.Start();
+
             Thread.Sleep(100);
 
             m_TcpListenThread = new Thread(TcpListenThreadFunc);
@@ -143,7 +145,9 @@ namespace MsgServer
         /// </summary>
         private void StopServer()
         {
-            m_Listener.Stop();
+            if(m_Listener != null)
+                m_Listener.Stop();
+
             Thread.Sleep(100);
 
             if (m_TcpListenThread != null)
