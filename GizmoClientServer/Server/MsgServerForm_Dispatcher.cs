@@ -49,7 +49,7 @@ namespace MsgServer
                 {
                     Debug.Write(" > Ошибка в DispatcherPingThreadFunc: " + ex.Message);
                 }
-                Thread.Sleep(10000);
+                Thread.Sleep(5000);
             }
         }
 
