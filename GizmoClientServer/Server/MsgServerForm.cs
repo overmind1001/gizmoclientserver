@@ -34,6 +34,7 @@ namespace MsgServer
 
         private Thread                  m_TcpListenThread;          // Поток прослушки TCP
         private Thread                  m_DispatcherPingThread;     // Поток пинга диспетчера 
+        private Thread                  m_ClientsCheckThread;       // Поток проверки пинга клиентов
 
 
         /// <summary>
@@ -138,6 +139,9 @@ namespace MsgServer
 
             m_TcpListenThread = new Thread(TcpListenThreadFunc);
             m_TcpListenThread.Start();
+
+            m_ClientsCheckThread = new Thread(ClientsCheckThreadFunc);
+            m_ClientsCheckThread.Start();
 
             lblStatus.Text = m_IsIsolated ? "автономно" : "подключен";
             lblIP.Text = m_ServerIP.ToString();
@@ -336,6 +340,11 @@ namespace MsgServer
                 SendCommand("!clientregistered", name, m_DispatcherIP, m_DispatcherPort);
             });
             thread.Start();
+            Thread thread1 = new Thread(() =>
+            {
+                SendCmdToAllClients(CreateCommand("!clientregistered", name));
+            });
+            thread1.Start();
             UiInsertClientInList(name);
             return true;
         }
@@ -357,6 +366,11 @@ namespace MsgServer
                 SendCommand("!clientunregistered", name, m_DispatcherIP, m_DispatcherPort);
             });
             thread.Start();
+            Thread thread1 = new Thread(() =>
+            {
+                SendCmdToAllClients(CreateCommand("!clientunregistered", name));
+            });
+            thread1.Start();
             UiRemoveClientFromList(name);
             return true;
         }
@@ -622,7 +636,8 @@ namespace MsgServer
             lock (lstLog)
             {
                 lstLog.Items.Add(" > " + msg);
-                lstLog.Top = lstLog.Items.Count - 1;
+                lstLog.SelectedIndex = lstLog.Items.Count - 1;
+                lstLog.TopIndex = lstLog.Items.Count - 1;
             }
         }
 
@@ -663,7 +678,8 @@ namespace MsgServer
             lock (lstClients)
             {
                 lstClients.Items.Add(name);
-                lstClients.Top = lstClients.Items.Count - 1;
+                lstClients.SelectedIndex = lstClients.Items.Count - 1;
+                lstClients.TopIndex = lstClients.Items.Count - 1;
             }
         }
 
@@ -707,7 +723,8 @@ namespace MsgServer
             lock (lstServers)
             {
                 lstServers.Items.Add(ip + ":" + port);
-                lstServers.Top = lstServers.Items.Count - 1;
+                lstServers.SelectedIndex = lstServers.Items.Count - 1;
+                lstServers.TopIndex = lstServers.Items.Count - 1;
             }
         }
 
