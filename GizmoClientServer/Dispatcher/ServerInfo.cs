@@ -31,5 +31,10 @@ namespace Dispatcher
         {
             return Address;
         }
+
+        public ServerInfo()
+        {
+            clientInfos = new List<ClientInfo>();
+        }
     }
 }
