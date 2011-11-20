@@ -367,10 +367,10 @@ namespace Dispatcher
                                 ServerInfo msgServ;
                                 lock (MsgServers)
                                 {
-                                    Random r = new Random();
+                                    Random r = new Random(DateTime.Now.Millisecond);
                                     if (MsgServers.Count != 0)
                                     {
-                                        int i = r.Next(0, MsgServers.Count - 1);
+                                        int i = r.Next(0, MsgServers.Count );
                                         msgServ = MsgServers[i];
                                         NetCommand msgServerCmd = new NetCommand()
                                         {
