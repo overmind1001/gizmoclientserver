@@ -119,6 +119,7 @@ namespace Client
                     }
                     String[] adr = ansServerAddress.parameters.Split(new char[]{' '});
                     TcpClient tcpToServer = new TcpClient(adr[0], Convert.ToInt32( adr[1])); //коннектимся к серверу
+                    
                     nsrw = new NetStreamReaderWriter(tcpToServer.GetStream());
                     nsrw.WriteCmd(whoCmd);
                     ansWhoCmd = nsrw.ReadCmd();
