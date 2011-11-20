@@ -34,6 +34,7 @@ namespace MsgServer
         public MsgServerForm()
         {
             InitializeComponent();
+            InitDelegates();
             Init();
         }
 
@@ -52,7 +53,7 @@ namespace MsgServer
             m_ServerIP              = Dns.GetHostEntry("localhost").AddressList[0];
 
             m_ServersList           = new List<ServerItem>();
-            m_ClientsList            = new List<ClientItem>();
+            m_ClientsList           = new List<ClientItem>();
 
             m_MaxClientCount        = 10;
 
@@ -349,6 +350,7 @@ namespace MsgServer
         // Для работы с формой (тут реализуется синхронизация потоков при обращении к контролам)
 
         public delegate void UiWriteLogHandler(string msg);
+        public UiWriteLogHandler UiWriteLogD;
         public event UiWriteLogHandler UiWriteLogEvent;
 
         /// <summary>
@@ -364,6 +366,7 @@ namespace MsgServer
         }
 
         public delegate void UiInsertClientInListHandler(string name);
+        public UiInsertClientInListHandler UiInsertClientInListD;
         public event UiInsertClientInListHandler UiInsertClientInListEvent;
 
         /// <summary>
@@ -379,6 +382,7 @@ namespace MsgServer
         }
 
         public delegate void UiRemoveClientFromListHandler(string name);
+        public UiRemoveClientFromListHandler UiRemoveClientFromListD;
         public event UiRemoveClientFromListHandler UiRemoveClientFromListEvent;
 
         /// <summary>
@@ -394,13 +398,14 @@ namespace MsgServer
         }
 
         public delegate void UiInsertServerInListHandler(string ip, int port);
+        public UiInsertServerInListHandler UiInsertServerInListD;
         public event UiInsertServerInListHandler UiInsertServerInListEvent;
 
         /// <summary>
         /// Добавляет сервер в лист
         /// </summary>
         /// <param name="name">имя клиента</param>
-        private void UiServerClientInList(string ip, int port)
+        private void UiInsertServerInList(string ip, int port)
         {
             lock (lstServers)
             {
@@ -409,6 +414,7 @@ namespace MsgServer
         }
 
         public delegate void UiRemoveServerFromListHandler(string ip, int port);
+        public UiRemoveServerFromListHandler UiRemoveServerFromListD;
         public event UiRemoveServerFromListHandler UiRemoveServerFromListEvent;
 
         /// <summary>
@@ -423,6 +429,14 @@ namespace MsgServer
             }
         }
 
+        private void InitDelegates()
+        {
+            UiWriteLogD += UiWriteLog;
+            UiInsertClientInListD += UiInsertClientInList;
+            UiRemoveClientFromListD += UiRemoveClientFromList;
+            UiInsertServerInListD += UiInsertServerInList;
+            UiRemoveServerFromListD += UiRemoveServerFromList;
+        }
 
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
