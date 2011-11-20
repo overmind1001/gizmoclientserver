@@ -342,6 +342,7 @@ namespace MsgServer
                 case "!message":
                     {
                         SendMsgToAllClients(Cmd.sender, Cmd.parameters);
+                        Stream.WriteCmd(CreateCommand("!ok", ""));
                     }
                     break;
 
