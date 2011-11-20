@@ -137,6 +137,7 @@
             this.tbLog.Location = new System.Drawing.Point(3, 16);
             this.tbLog.Multiline = true;
             this.tbLog.Name = "tbLog";
+            this.tbLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.tbLog.Size = new System.Drawing.Size(881, 187);
             this.tbLog.TabIndex = 0;
             // 

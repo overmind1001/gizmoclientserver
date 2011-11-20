@@ -160,7 +160,7 @@ namespace Dispatcher
                     unregisteredServers.Clear();
                     foreach (ServerInfo s in MsgServers)
                     {
-                        if ( ( DateTime.Now-s.lastPingTime).TotalSeconds>5)//сервер не пингует уже 5 сек
+                        if ( ( DateTime.Now-s.lastPingTime).TotalSeconds>10)//сервер не пингует уже  сек
                         {
                             unregisteredServers.Add(s);
                         }
