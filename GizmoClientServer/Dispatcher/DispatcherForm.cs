@@ -99,6 +99,8 @@ namespace Dispatcher
                     ns.WriteLine(text);
                     //тут надо что-то сделать чтобы не закрыть соединение, пока клиент не примет сообщение
                     //пока что костыль
+                    if( ns.ReadCmd().cmd!="!ok")
+                        throw new Exception("В ответ получен не !ok");
                     Thread.Sleep(10000);
                 }
                 catch (Exception ex)
@@ -131,7 +133,22 @@ namespace Dispatcher
         {
             SendText(ip, port, cmd.ToString());
         }
-            
+        private NetCommand CreateStandardCommand(string Cmd, string Sender, string Parameters)//получение стандартной команды
+        {
+            NetCommand cmd = new NetCommand()
+            {
+                Ip = DispatcherIP.ToString(),//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                Port = 501,
+                sender = Sender,
+                cmd = Cmd,
+                parameters = Parameters
+            };
+            return cmd;
+        }
+        private NetCommand CreateStandardAnswer()//создает команду стандартного ответа для подтверждения команд, не требующих ответа
+        {
+            return CreateStandardCommand("!ok", "dispatcher", String.Empty);
+        }
         void availableCheck()//потоковая процедура проверки доступности серверов и файл серверов
         {
             List<ServerInfo> unregisteredServers = new List<ServerInfo>();
@@ -143,7 +160,7 @@ namespace Dispatcher
                     unregisteredServers.Clear();
                     foreach (ServerInfo s in MsgServers)
                     {
-                        if ( ( DateTime.Now-s.lastPingTime).TotalSeconds>15)//сервер не пингует уже 20 сек
+                        if ( ( DateTime.Now-s.lastPingTime).TotalSeconds>5)//сервер не пингует уже 5 сек
                         {
                             unregisteredServers.Add(s);
                         }
@@ -174,7 +191,7 @@ namespace Dispatcher
                     unregisterFileServer(s.Ip, s.Port);
                 }
                 
-                Thread.Sleep(5000);//интервал проверок
+                Thread.Sleep(1000);//интервал проверок
             }
         }
         void unregisterFileServer(string ip, int port)
@@ -572,6 +589,7 @@ namespace Dispatcher
                             case "!clientregistered":   //появился новый клиент
                                 if (RegisterClient(command.parameters))
                                 {
+                                    netStream.WriteCmd(CreateStandardAnswer());
                                     NetCommand c = command.Clone();//адрес отправителя уже другой
                                     c.Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString();
                                     SendCmdToAllServers(c);
@@ -580,6 +598,7 @@ namespace Dispatcher
                             case "!clientunregistered":
                                 UnregisterClient(command.parameters);
                                 {
+                                    netStream.WriteCmd(CreateStandardAnswer());
                                     NetCommand c = command.Clone();//адрес отправителя уже другой
                                     c.Ip = DispatcherIP.ToString();//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString();
                                     c.Port = 501;

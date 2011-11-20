@@ -115,7 +115,7 @@ namespace Client
             serverPort = cf.serverPort;
             name = cf.tbName.Text;
 
-            this.Text += name + " " + myIp.ToString() + " " + ListenerPort.ToString();
+            this.Text ="Клиент "+ name + " " + myIp.ToString() + " " + ListenerPort.ToString();
             //регистрируемся на сервере
             if (!registerMe(cf.tbName.Text))
             {
@@ -135,9 +135,9 @@ namespace Client
 
             //эти операции асинхронные
             //загружаем список контактов
-           // AsyncGetContactListFromServer();
+            AsyncGetContactListFromServer();
             //загружаем список файлов
-          //  AsyncGetFileListFromServer();
+            AsyncGetFileListFromServer();
         }
 
         /// <summary>
@@ -285,7 +285,7 @@ namespace Client
                         {
                             TcpClient tcpClient = new TcpClient(serverIp, serverPort);
                             NetStreamReaderWriter nsrw = new NetStreamReaderWriter(tcpClient.GetStream());
-                            nsrw.ReadTimeout = 10000;
+                            nsrw.ReadTimeout = 2000;
                             NetCommand pingCmd = new NetCommand()
                             {
                                 Ip = myIp.ToString(),//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
@@ -299,7 +299,7 @@ namespace Client
                             if (ansPing.cmd != "!pong")
                                 MessageBox.Show("Client. В ответ на пинг пришла хрень");
                             tcpClient.Close();
-                            Thread.Sleep(5000);//задержка 
+                            Thread.Sleep(1000);//задержка 
                         }
                     }
                     catch (Exception ex)
@@ -346,10 +346,11 @@ namespace Client
             string[] names = ansGetClientList.parameters.Split(new char[]{'|'});//получили массив имен
             lock (lbPeople)//работа с Ui
             {
-                ClearPeopleD();
+
+                lbPeople.Invoke(ClearPeopleD);
                 foreach (String s in names)
                 {
-                    AddManD(s);
+                    lbPeople.Invoke(AddManD,new object[]{s});
                 }
             }
         }
