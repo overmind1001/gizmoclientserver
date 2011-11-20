@@ -175,10 +175,10 @@ namespace MsgServer
                         }
                         break;
                 }
-                }
+            }
             catch (Exception ex)
             {
-                UiWriteLog("Ошибка в ClientCommandHandler: " + ex.Message);
+                Debug.Write(" > Ошибка в ClientCommandHandler: " + ex.Message);
             }
         }
     }

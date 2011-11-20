@@ -38,7 +38,7 @@ namespace MsgServer
                 }
                 catch (Exception ex)
                 {
-                    UiWriteLog("Ошибка в TcpListenThreadFunc: " + ex.Message);
+                    Debug.Write(" > Ошибка в TcpListenThreadFunc: " + ex.Message);
                 }
             }
         }
@@ -68,6 +68,7 @@ namespace MsgServer
                 // Если отправитель - диспетчер
                 else if (Cmd.sender == "dispatcher")
                 {
+                    DispatcherCommandHandler(Stream, Cmd);
                 }
 
                 // Если отправитель - клиент
@@ -78,7 +79,7 @@ namespace MsgServer
             }
             catch (Exception ex)
             {
-                UiWriteLog("Ошибка в TcpThreadFunc: " + ex.Message);
+                Debug.Write(" > Ошибка в TcpThreadFunc: " + ex.Message);
             }
         }
     }
