@@ -47,7 +47,14 @@ namespace MsgServer
                 }
                 catch (Exception ex)
                 {
+                    tryPing++;
                     Debug.Write(" > Ошибка в DispatcherPingThreadFunc: " + ex.Message);
+                    if (tryPing == 3)
+                    {
+                        UiWriteLog("Диспетчер не пинговал уже 3 раза!");
+                        m_IsIsolated = DisconnectToDispatcher();
+                        break;
+                    }
                 }
                 Thread.Sleep(1000);
             }
