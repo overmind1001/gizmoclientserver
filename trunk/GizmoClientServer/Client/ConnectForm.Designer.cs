@@ -36,6 +36,8 @@
             this.tbName = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.btnRecieveBroadcastAddr = new System.Windows.Forms.Button();
+            this.label4 = new System.Windows.Forms.Label();
+            this.cmbClientIp = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPort)).BeginInit();
             this.SuspendLayout();
             // 
@@ -112,13 +114,33 @@
             this.btnRecieveBroadcastAddr.UseVisualStyleBackColor = true;
             this.btnRecieveBroadcastAddr.Click += new System.EventHandler(this.btnRecieveBroadcastAddr_Click);
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(282, 32);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(67, 13);
+            this.label4.TabIndex = 2;
+            this.label4.Text = "Интерфейс:";
+            // 
+            // cmbClientIp
+            // 
+            this.cmbClientIp.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbClientIp.FormattingEnabled = true;
+            this.cmbClientIp.Location = new System.Drawing.Point(285, 48);
+            this.cmbClientIp.Name = "cmbClientIp";
+            this.cmbClientIp.Size = new System.Drawing.Size(162, 21);
+            this.cmbClientIp.TabIndex = 4;
+            // 
             // ConnectForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(330, 227);
+            this.ClientSize = new System.Drawing.Size(479, 227);
+            this.Controls.Add(this.cmbClientIp);
             this.Controls.Add(this.numericUpDownPort);
             this.Controls.Add(this.label2);
+            this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.tbName);
@@ -145,5 +167,7 @@
         public System.Windows.Forms.TextBox tbName;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button btnRecieveBroadcastAddr;
+        private System.Windows.Forms.Label label4;
+        public System.Windows.Forms.ComboBox cmbClientIp;
     }
 }

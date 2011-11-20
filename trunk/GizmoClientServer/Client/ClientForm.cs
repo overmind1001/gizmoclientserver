@@ -40,11 +40,15 @@ namespace Client
         int ListenerPort;   //прослушиваемый порт
 
         string name;        //имя клиента
+        IPAddress myIp;
 
 
         public ClientForm()
         {
             InitializeComponent();
+
+            //IPAddress[] addrlist = Dns.GetHostAddresses(Dns.GetHostName());
+            myIp = Dns.GetHostAddresses(Dns.GetHostName())[3];
 
             WriteMessageD += WriteMessage;
             AddManD += AddMan;
@@ -98,7 +102,9 @@ namespace Client
             this.TcpListener= cf.tcpListener;
             ListenerPort = cf.MyPort;
 
-            this.Text += " " + ListenerPort.ToString();//////////////////////
+            myIp = (IPAddress)cf.cmbClientIp.SelectedItem;
+
+            this.Text += " " + myIp.ToString()+" " + ListenerPort.ToString();//////////////////////
 
             serverIp = cf.serverIp;
             serverPort = cf.serverPort;
@@ -214,7 +220,7 @@ namespace Client
         {
             NetCommand cmd = new NetCommand()
             {
-                Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                Ip = myIp.ToString(),//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                 Port = ListenerPort,
                 sender = Sender,
                 cmd = Cmd,
@@ -235,7 +241,7 @@ namespace Client
             {
                 NetCommand registerCmd = new NetCommand()
                 {
-                    Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                    Ip = myIp.ToString(),//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                     Port = ListenerPort,
                     sender = name,//пока что безымянный
                     cmd = "!register",
@@ -268,7 +274,7 @@ namespace Client
                             nsrw.ReadTimeout = 100000;
                             NetCommand pingCmd = new NetCommand()
                             {
-                                Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                                Ip = myIp.ToString(),//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                                 Port = ListenerPort,
                                 sender = name,//пока что безымянный
                                 cmd = "!ping",
@@ -314,7 +320,7 @@ namespace Client
             NetStreamReaderWriter nsrw = new NetStreamReaderWriter(ns);
             NetCommand getClientListCmd = new NetCommand()
             {
-                Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                Ip = myIp.ToString(),//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                 Port = ListenerPort,
                 sender = name,
                 cmd = "!getclientlist",
@@ -357,7 +363,7 @@ namespace Client
             NetStreamReaderWriter nsrw = new NetStreamReaderWriter(ns);
             NetCommand getFileListCmd = new NetCommand()
             {
-                Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                Ip = myIp.ToString(),//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                 Port = ListenerPort,
                 sender = name,
                 cmd = "!getfilelist",
@@ -497,7 +503,7 @@ namespace Client
         {
             NetCommand messageCmd = new NetCommand()
             {
-                Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                Ip = myIp.ToString(),//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                 Port = ListenerPort,
                 sender = name,//пока что безымянный
                 cmd = "!message",
@@ -512,6 +518,11 @@ namespace Client
             if (name == string.Empty)
                 return;
             AsyncSendMessage(tbMessage.Text);
+        }
+
+        private void ClientForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Process.GetCurrentProcess().Kill();
         }
     }
 }

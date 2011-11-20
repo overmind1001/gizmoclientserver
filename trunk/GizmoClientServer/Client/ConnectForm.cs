@@ -30,6 +30,13 @@ namespace Client
             tbName.Text = "Sanya";
             numericUpDownPort.Value = 500;
 
+            //заполняем комбик с ip адресами клента
+            cmbClientIp.Items.Clear();
+            IPAddress[] myIps = Dns.GetHostAddresses( Dns.GetHostName());
+            foreach (IPAddress ip in myIps)
+                cmbClientIp.Items.Add(ip);
+            cmbClientIp.SelectedIndex = 0;
+
             this.DialogResult= DialogResult.Cancel;
         }
         private bool IpIsValid()
@@ -48,6 +55,7 @@ namespace Client
                 {
                     port = r.Next(100, 65000);
                     TcpListener tcpListener = new TcpListener(Dns.GetHostByName( Dns.GetHostName()).AddressList[0],port );//new TcpListener(Dns.GetHostAddresses("localhost")[0],port);
+                    
                     //tcpListener = new TcpListener(Dns.GetHostEntry(Dns.GetHostName()).AddressList[0], port);
                     //TcpListener tcpListener = new TcpListener(IPAddress.Parse("90.151.215.19"), port);
                     tcpListener.Start();
@@ -84,7 +92,7 @@ namespace Client
                 NetStreamReaderWriter nsrw = new NetStreamReaderWriter(tcpClient.GetStream());
                 NetCommand whoCmd = new NetCommand()
                 {
-                    Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                    Ip = cmbClientIp.Text,//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                     Port = MyPort,
                     sender = "client",//пока что безымянный
                     cmd = "!who",
@@ -99,7 +107,7 @@ namespace Client
 
                     NetCommand getserverCmd = new NetCommand()
                     {
-                        Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                        Ip = cmbClientIp.Text,//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                         Port = MyPort,
                         sender = "client",//пока что безымянный
                         cmd = "!getserver",
