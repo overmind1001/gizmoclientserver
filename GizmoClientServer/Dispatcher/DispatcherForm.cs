@@ -18,10 +18,10 @@ namespace Dispatcher
     {
         //делегаты
         public delegate void MyListChangedHandler();
-        public MyListChangedHandler MsgServerListChanged;
-        public MyListChangedHandler FileServerListChanged;
-        public MyListChangedHandler ClientsListChanged;
-        public MyListChangedHandler FilesListChanged;
+        public MyListChangedHandler UpdateMsgServerListD;
+        public MyListChangedHandler UpdateFileServerListD;
+        public MyListChangedHandler UpdateClientsListD;
+        public MyListChangedHandler UpdateFilesListD;
 
         IPAddress DispatcherIP = Dns.GetHostEntry(Dns.GetHostName()).AddressList[0];
 
@@ -37,17 +37,24 @@ namespace Dispatcher
         {
             System.Diagnostics.Debug.AutoFlush = true;
             System.Diagnostics.Debug.WriteLine("Dispatcher. Started");
+
             InitializeComponent();
-            MsgServerListChanged += UpdateMsgServerList;
-            FileServerListChanged += UpdateFileServerList;
-            ClientsListChanged += UpdateClientsList;
-            FilesListChanged += UpdateFilesList;
+    
+            UpdateMsgServerListD += UpdateMsgServerList;
+            UpdateFileServerListD += UpdateFileServerList;
+            UpdateClientsListD += UpdateClientsList;
+            UpdateFilesListD += UpdateFilesList;
+            WriteLogD += WriteLog;
 
             MsgServers = new List<ServerInfo>();
             FileServers = new List<ServerInfo>();
             Clients = new List<ClientInfo>();
             Files = new List<FileInfo>();
             
+            
+        }
+        private void DispatcherForm_Load(object sender, EventArgs e)
+        {
             //запустить поток слушающий порт для клиентов
             Thread clientListenerThread = new Thread(clientTcpListenerProc);
             clientListenerThread.Start();
@@ -61,8 +68,24 @@ namespace Dispatcher
             Thread availableCheckThred = new Thread(availableCheck);
             availableCheckThred.Start();
         }
-    
    
+        //Ui
+        //делегаты
+        public delegate void WriteLogHandler(string str);
+        public WriteLogHandler WriteLogD;
+        void WriteLog(string str)
+        {
+            tbLog.Text += str + Environment.NewLine;
+        }
+        void uiWriteLog(string str)
+        {
+            this.Invoke(WriteLogD,new object[]{str});
+        }
+
+        public delegate void SimpleHandler();
+        public SimpleHandler uiUpdateServersListD;
+
+
         void AsyncSendText(string ip,int port,string text)//асинхронная посылка текста
         {
             Thread t = new Thread(() => 
@@ -112,6 +135,7 @@ namespace Dispatcher
             List<ServerInfo> unregisteredServers = new List<ServerInfo>();
             while (Running)
             {
+                uiWriteLog("> available check");
                 lock (MsgServers)
                 {
                     unregisteredServers.Clear();
@@ -147,11 +171,13 @@ namespace Dispatcher
                 {
                     unregisterFileServer(s.Ip, s.Port);
                 }
-                Thread.Sleep(1000);
+                
+                Thread.Sleep(10000);
             }
         }
         void unregisterFileServer(string ip, int port)
         {
+            uiWriteLog("> unregister file server "+ip+ " " + port.ToString());
             lock (FileServers)
             {
                 for (int i = 0; i < FileServers.Count; i++)
@@ -179,10 +205,16 @@ namespace Dispatcher
                             {
                                 Files.Remove(f);
                             }
-                            FilesListChanged();
+                            lock (lbFiles)
+                            {
+                                lbFiles.Invoke(UpdateFilesListD);
+                            }
                         }
                         FileServers.RemoveAt(i);        //удаляем из коллекции. Сообщать никому не надо.
-                        FileServerListChanged();
+                        lock (lbFileServers)
+                        {
+                            lbFileServers.Invoke(UpdateFileServerListD);
+                        }
                         break;
                     }
                 } 
@@ -190,6 +222,7 @@ namespace Dispatcher
         }
         void unregisterServer(string ip, int port)
         {
+            uiWriteLog(string.Format("> unregister msgserver {0} {1}",ip,port));
             lock (MsgServers)
             {
                 for (int i = 0; i < MsgServers.Count; i++)
@@ -198,7 +231,10 @@ namespace Dispatcher
                     {
                         ServerInfo msgServer = MsgServers[i];
                         MsgServers.RemoveAt(i);
-                        MsgServerListChanged();
+                        lock (lbMsgServers)
+                        {
+                            lbMsgServers.Invoke(UpdateMsgServerListD);
+                        }
                         SendServerUnregistered(ip, port);
                         unregisterClientsOfServer(msgServer);
                         break;
@@ -208,6 +244,7 @@ namespace Dispatcher
         }
         void unregisterClientsOfServer(ServerInfo serv)
         {
+            uiWriteLog(string.Format("> unregister clients of server"));
             //foreach (ClientInfo c in serv.clientInfos)
             //{
             //    lock (Clients)
@@ -228,6 +265,7 @@ namespace Dispatcher
         }
         void SendServerUnregistered(string ip, int port)
         {
+            uiWriteLog(string.Format("> send server uregistered {0} {1}", ip, port));
             NetCommand serverUnregisteredCmd = new NetCommand()
             {
                 Ip = DispatcherIP.ToString(),//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
@@ -272,6 +310,7 @@ namespace Dispatcher
         }
         void DoCommunicateWithClient(object tcpclient)
         {
+            uiWriteLog(string.Format("> client connecting.."));
             using (TcpClient tcpClient = (TcpClient) tcpclient)
             using (NetworkStream ns = tcpClient.GetStream())
             {
@@ -281,7 +320,7 @@ namespace Dispatcher
                     try
                     {
                         NetCommand command = nsrw.ReadCmd();
-                        
+                        uiWriteLog(string.Format("> cmd from client {0}", command));
                         switch (command.cmd)
                         {
                             case "!who":
@@ -484,7 +523,7 @@ namespace Dispatcher
                         }
                         command = netStream.ReadCmd();
                         parameters = command.parameters.Split(new char[] { ' ' });
-                       
+                        uiWriteLog(string.Format("> cmd from msgserver {0}", command));
                         switch (command.cmd)
                         {
                             case "!who":        //к кому я подключился?
@@ -687,7 +726,10 @@ namespace Dispatcher
                 {
                     Files.Add(new FileInfo() {Filename=f });
                 }
-                FilesListChanged();
+                lock (lbFiles)
+                {
+                    lbFiles.Invoke(UpdateFilesListD);
+                }
             }
         }
         bool AddServer(string type, string ip, int port,out ServerInfo serv)//TODO добавление информации о меилслоте
@@ -705,8 +747,13 @@ namespace Dispatcher
                 lock (MsgServers)
                 {
                     MsgServers.Add(serverInfo);
+                    uiWriteLog(string.Format("> msg server added {0} {1}",serverInfo.Ip,serverInfo.Port));
                 }
-                MsgServerListChanged();//обновление списка серверов на форме
+                lock (lbMsgServers)
+                {
+                    lbMsgServers.Invoke(UpdateMsgServerListD);
+                }
+                //MsgServerListChanged();//обновление списка серверов на форме
 
                 NetCommand serverregisteredCmd = new NetCommand()
                 {
@@ -725,7 +772,11 @@ namespace Dispatcher
                 {
                     FileServers.Add(serverInfo);
                 }
-                FileServerListChanged();//обновление списка файлов на сервере
+                lock (lbFileServers)
+                {
+                    lbFileServers.Invoke(UpdateFileServerListD);//обновление списка файлов на сервере
+                }
+                
                 AsyncGetFileList(ip, port);//получить список файлов
             }
             else
@@ -849,8 +900,12 @@ namespace Dispatcher
                 ClientInfo newClient = new ClientInfo();
                 newClient.ClientName = name;
                 Clients.Add(newClient);
-                ClientsListChanged();//обновление списка клиентов на форме
-      
+
+                lock (lbClients)
+                {
+                    lbClients.Invoke(UpdateClientsListD);//обновление списка клиентов на форме
+                    uiWriteLog(string.Format("> client registered {0}", newClient.ClientName));
+                }
             }
             return true;
         }
@@ -863,7 +918,11 @@ namespace Dispatcher
                     if (Clients[i].ClientName == name)
                     {
                         Clients.RemoveAt(i);
-                        ClientsListChanged();//обновление списка клиентов на форме
+                        lock (lbClients)
+                        {
+                            lbClients.Invoke(UpdateClientsListD);//обновление списка клиентов на форме
+                            uiWriteLog(string.Format("> unregister client {0} ", name));
+                        }
                         break;
                     }
                 }
@@ -872,6 +931,7 @@ namespace Dispatcher
         //Широковещание
         void broadcastSelfInfo()//потоковая процедура для организации циклической посылки широковещательных сообщений
         {
+            uiWriteLog(string.Format("> start broadcast"));
             Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             s.EnableBroadcast = true;
 
@@ -900,5 +960,7 @@ namespace Dispatcher
             Running = false;
             Process.GetCurrentProcess().Kill();
         }
+
+       
     }
 }

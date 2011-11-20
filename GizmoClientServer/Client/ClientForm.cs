@@ -100,8 +100,8 @@ namespace Client
 
             this.Text += " " + ListenerPort.ToString();//////////////////////
 
-            serverIp = cf.tbIp.Text;
-            serverPort = Convert.ToInt32( cf.numericUpDownPort.Value);
+            serverIp = cf.serverIp;
+            serverPort = cf.serverPort;
             name = cf.tbName.Text;
 
             //запускаем поток для TcpListenera
