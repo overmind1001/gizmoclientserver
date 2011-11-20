@@ -137,7 +137,7 @@ namespace Client
             //загружаем список контактов
             AsyncGetContactListFromServer();
             //загружаем список файлов
-            AsyncGetFileListFromServer();
+            //AsyncGetFileListFromServer();
         }
 
         /// <summary>
