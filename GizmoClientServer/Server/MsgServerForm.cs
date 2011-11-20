@@ -691,7 +691,7 @@ namespace MsgServer
 
         private void MsgServerForm_Load(object sender, EventArgs e)
         {
-            StartServer();
+            //StartServer();
         }
 
         private void MsgServerForm_FormClosed(object sender, FormClosedEventArgs e)
