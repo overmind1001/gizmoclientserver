@@ -264,23 +264,27 @@ namespace Dispatcher
         void unregisterClientsOfServer(ServerInfo serv)
         {
             uiWriteLog(string.Format("> unregister clients of server"));
-            //foreach (ClientInfo c in serv.clientInfos)
-            //{
-            //    lock (Clients)
-            //    {
-            //        Clients.Remove(c);
-            //        ClientsListChanged();
-            //    }
-            //    NetCommand clientUnregisteredCmd = new NetCommand()
-            //    {
-            //        Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
-            //        Port = 501,
-            //        sender = "dispatcher",
-            //        cmd = "!clientunregistered",
-            //        parameters = c.ClientName
-            //    };
-            //    SendCmdToAllServers(clientUnregisteredCmd);
-            //}
+            if (serv.clientInfos == null)
+                return;
+            foreach (ClientInfo c in serv.clientInfos)
+            {
+                if(c==null)
+                    break;
+                lock (Clients)
+                {
+                    Clients.Remove(c);
+                    lbClients.Invoke(UpdateClientsListD);
+                }
+                NetCommand clientUnregisteredCmd = new NetCommand()
+                {
+                    Ip = DispatcherIP.ToString(),//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                    Port = 501,
+                    sender = "dispatcher",
+                    cmd = "!clientunregistered",
+                    parameters = c.ClientName
+                };
+                SendCmdToAllServers(clientUnregisteredCmd);
+            }
         }
         void SendServerUnregistered(string ip, int port)
         {
@@ -602,7 +606,7 @@ namespace Dispatcher
                                 SendClientList(ns);
                                 break;
                             case "!clientregistered":   //появился новый клиент
-                                if (RegisterClient(command.parameters))
+                                if (RegisterClient(command.parameters,command.Ip,command.Port))
                                 {
                                     netStream.WriteCmd(CreateStandardAnswer());
                                     NetCommand c = command.Clone();//адрес отправителя уже другой
@@ -618,6 +622,16 @@ namespace Dispatcher
                                     c.Ip = DispatcherIP.ToString();//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString();
                                     c.Port = 501;
                                     SendCmdToAllServers(c);
+                                }
+
+                                lock (MsgServers)
+                                {
+                                    //находим сервер
+                                    ServerInfo server1 = MsgServers.Find((ServerInfo serv) => { return serv.Ip == command.Ip && serv.Port == command.Port; });
+                                    if (server1 != null)
+                                    {
+                                        server1.clientInfos.RemoveAll((ClientInfo cli) => { return cli.ClientName == command.parameters; });
+                                    }
                                 }
                                 break;
                             case "!getfilelist":
@@ -926,8 +940,19 @@ namespace Dispatcher
         //        }
         //    }
         //}
-        bool RegisterClient(string name)
+        bool RegisterClient(string name,string ip,int port)
         {
+            ServerInfo server=null;
+            lock (MsgServers)
+            {
+                server = MsgServers.Find((ServerInfo s) => { return s.Ip == ip && s.Port == port; });
+            }
+            if (server == null)
+            {
+                Debug.WriteLine("Dispatcher. RegisterClient. Сервер клиента не найден!");
+                return false;
+            }
+
             lock (Clients)
             {
                 ClientInfo exsisting = Clients.Find((x) => {return x.ClientName == name; });
@@ -936,6 +961,8 @@ namespace Dispatcher
                 ClientInfo newClient = new ClientInfo();
                 newClient.ClientName = name;
                 Clients.Add(newClient);
+
+                server.clientInfos.Add(newClient);//добавили клиента серверу
 
                 lock (lbClients)
                 {
