@@ -137,7 +137,6 @@ namespace Client
         {
             TcpClient tcpClient =(TcpClient) tcpCliento;
             NetStreamReaderWriter nsrw = new NetStreamReaderWriter(tcpClient.GetStream());
-            char[] sep = { ' ' };
             if (tcpClient.Connected)
             {
                 try
@@ -147,11 +146,14 @@ namespace Client
                     {
                         case "!message"://прием сообщения                            
                             string message = command.parameters;
-                            WriteMessageD(message);
-
+                            nsrw.WriteCmd(CreateStandardAnswer());//ответ
+                            lock (tbChat)
+                            {
+                                WriteMessageD(message);//обновление уи
+                            }
                             break;
                         case "!clientregistered":
-                            //string cl = splited[1];
+                            nsrw.WriteCmd(CreateStandardAnswer());//ответ
                             string cl = command.parameters;
                             lock (lbPeople)
                             {
@@ -159,7 +161,7 @@ namespace Client
                             }
                             break;
                         case "!clientunregistered":
-                            //cl = splited[1];
+                            nsrw.WriteCmd(CreateStandardAnswer());//ответ
                             cl = command.parameters;
                             lock (lbPeople)
                             {
@@ -167,7 +169,7 @@ namespace Client
                             }
                             break;
                         case "!addfile":
-                            //string file = splited[1];
+                            nsrw.WriteCmd(CreateStandardAnswer());//ответ
                             string file = command.parameters;
                             lock (lbFilesList)
                             {
@@ -175,7 +177,7 @@ namespace Client
                             }
                             break;
                         case "!deletefile":
-                            //file = splited[1];
+                            nsrw.WriteCmd(CreateStandardAnswer());//ответ
                             file = command.parameters;
                             lock (lbFilesList)
                             {
