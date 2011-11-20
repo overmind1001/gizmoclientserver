@@ -284,8 +284,10 @@ namespace MsgServer
             {
                 TcpClient tcpclient = new TcpClient(ip, port);
                 NetStreamReaderWriter Stream = new NetStreamReaderWriter(tcpclient.GetStream());
+                UiWriteLog("Посылаем команду '" + cmd + " " + param + "' на " + ip + ":" + port.ToString());
                 Stream.WriteCmd(CreateCommand(cmd, param));
                 retn = Stream.ReadCmd();
+                UiWriteLog("Получили ответ '" + retn.cmd + " " + retn.parameters + "' от " + retn.Ip + ":" + retn.Port);
             }
             catch (Exception ex)
             {
@@ -428,8 +430,11 @@ namespace MsgServer
                         int ClientPort = m_ClientsList[i].GetPort();
                         TcpClient Tcp = new TcpClient(ClientIP, ClientPort);
                         NetStreamReaderWriter Stream = new NetStreamReaderWriter(Tcp.GetStream());
-
-                        Stream.WriteCmd(CreateCommand("!message", Sender + ": " + Msg));
+                        NetCommand Cmd = CreateCommand("!message", Sender + ": " + Msg);
+                        UiWriteLog("Посылаем команду '" + Cmd.cmd + " " + Cmd.parameters + "' на " + ClientIP + ":" + ClientPort.ToString());
+                        Stream.WriteCmd(Cmd);
+                        NetCommand AnsCmd = Stream.ReadCmd();
+                        UiWriteLog("Получили ответ '" + AnsCmd.cmd + " " + AnsCmd.parameters + "' от " + AnsCmd.Ip + ":" + AnsCmd.Port);
                     }
                     catch (Exception ex)
                     {
@@ -456,8 +461,10 @@ namespace MsgServer
                         int ClientPort = m_ClientsList[i].GetPort();
                         TcpClient Tcp = new TcpClient(ClientIP, ClientPort);
                         NetStreamReaderWriter Stream = new NetStreamReaderWriter(Tcp.GetStream());
-
+                        UiWriteLog("Посылаем команду '" + Cmd.cmd + " " + Cmd.parameters + "' на " + ClientIP + ":" + ClientPort.ToString());
                         Stream.WriteCmd(Cmd);
+                        NetCommand AnsCmd = Stream.ReadCmd();
+                        UiWriteLog("Получили ответ '" + AnsCmd.cmd + " " + AnsCmd.parameters + "' от " + AnsCmd.Ip + ":" + AnsCmd.Port);
                     }
                     catch (Exception ex)
                     {
