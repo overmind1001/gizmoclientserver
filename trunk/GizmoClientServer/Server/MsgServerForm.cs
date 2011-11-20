@@ -349,93 +349,113 @@ namespace MsgServer
         /////////////////////////////////////////////////////////////////////////////////////////////////////
         // Для работы с формой (тут реализуется синхронизация потоков при обращении к контролам)
 
-        public delegate void UiWriteLogHandler(string msg);
-        public UiWriteLogHandler UiWriteLogD;
-        public event UiWriteLogHandler UiWriteLogEvent;
+        public delegate void WriteLogHandler(string msg);
+        public WriteLogHandler WriteLogD;
 
         /// <summary>
         /// Пишет сообщение в лог
         /// </summary>
         /// <param name="text">текст сообщения</param>
+        private void WriteLog(string msg)
+        {
+            lstLog.Items.Add(" > " + msg);
+        }
+
         private void UiWriteLog(string msg)
         {
             lock (lstLog)
             {
-                lstLog.Items.Add(" > " + msg);
+                lstLog.Invoke(WriteLogD, new object[] { msg });
             }
         }
 
-        public delegate void UiInsertClientInListHandler(string name);
-        public UiInsertClientInListHandler UiInsertClientInListD;
-        public event UiInsertClientInListHandler UiInsertClientInListEvent;
+        public delegate void InsertClientInListHandler(string name);
+        public InsertClientInListHandler InsertClientInListD;
 
         /// <summary>
         /// Добавляет имя клиента в лист
         /// </summary>
         /// <param name="name">имя клиента</param>
+        private void InsertClientInList(string name)
+        {
+             lstClients.Items.Add(name);
+        }
+
         private void UiInsertClientInList(string name)
         {
             lock (lstClients)
             {
-                lstClients.Items.Add(name);
+                lstClients.Invoke(InsertClientInListD, new object[] { name });
             }
         }
 
-        public delegate void UiRemoveClientFromListHandler(string name);
-        public UiRemoveClientFromListHandler UiRemoveClientFromListD;
-        public event UiRemoveClientFromListHandler UiRemoveClientFromListEvent;
+        public delegate void RemoveClientFromListHandler(string name);
+        public RemoveClientFromListHandler RemoveClientFromListD;
 
         /// <summary>
         /// Удаляет имя клиента из листа
         /// </summary>
         /// <param name="name">имя клиента</param>
+        private void RemoveClientFromList(string name)
+        {
+            lstClients.Items.Remove(name);
+        }
+
         private void UiRemoveClientFromList(string name)
         {
             lock (lstClients)
             {
-                lstClients.Items.Remove(name);
+                lstClients.Invoke(RemoveClientFromListD, new object[] { name });
             }
         }
 
-        public delegate void UiInsertServerInListHandler(string ip, int port);
-        public UiInsertServerInListHandler UiInsertServerInListD;
-        public event UiInsertServerInListHandler UiInsertServerInListEvent;
+        public delegate void InsertServerInListHandler(string ip, int port);
+        public InsertServerInListHandler InsertServerInListD;
 
         /// <summary>
         /// Добавляет сервер в лист
         /// </summary>
         /// <param name="name">имя клиента</param>
+        private void InsertServerInList(string ip, int port)
+        {
+             lstServers.Items.Add(ip + ":" + port);
+        }
+
         private void UiInsertServerInList(string ip, int port)
         {
             lock (lstServers)
             {
-                lstServers.Items.Add(ip + ":" + port);
+                lstServers.Invoke(InsertServerInListD, new object[] { ip, port });
             }
         }
 
-        public delegate void UiRemoveServerFromListHandler(string ip, int port);
-        public UiRemoveServerFromListHandler UiRemoveServerFromListD;
-        public event UiRemoveServerFromListHandler UiRemoveServerFromListEvent;
+        public delegate void RemoveServerFromListHandler(string ip, int port);
+        public RemoveServerFromListHandler RemoveServerFromListD;
 
         /// <summary>
         /// Удаляет сервер из листа
         /// </summary>
         /// <param name="name">имя клиента</param>
+        private void RemoveServerFromList(string ip, int port)
+        {
+            lstServers.Items.Remove(ip + ":" + port);
+        }
+
         private void UiRemoveServerFromList(string ip, int port)
         {
             lock (lstServers)
             {
-                lstServers.Items.Remove(ip + ":" + port);
+                lstServers.Invoke(RemoveServerFromListD, new object[] { ip, port });
             }
         }
 
         private void InitDelegates()
         {
-            UiWriteLogD += UiWriteLog;
-            UiInsertClientInListD += UiInsertClientInList;
-            UiRemoveClientFromListD += UiRemoveClientFromList;
-            UiInsertServerInListD += UiInsertServerInList;
-            UiRemoveServerFromListD += UiRemoveServerFromList;
+            WriteLogD               += WriteLog;
+            InsertClientInListD     += InsertClientInList;
+            RemoveClientFromListD   += RemoveClientFromList;
+            InsertServerInListD     += InsertServerInList;
+            RemoveServerFromListD   += RemoveServerFromList;
         }
 
 
