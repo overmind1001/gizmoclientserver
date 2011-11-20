@@ -53,6 +53,9 @@
     <Compile Include="IpConfig.Designer.cs">
       <DependentUpon>IpConfig.cs</DependentUpon>
     </Compile>
+    <Compile Include="MsgServerForm_MsgServer.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="MsgServerForm_Server.cs">
       <SubType>Form</SubType>
     </Compile>

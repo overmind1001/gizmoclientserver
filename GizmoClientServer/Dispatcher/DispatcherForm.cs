@@ -208,23 +208,23 @@ namespace Dispatcher
         }
         void unregisterClientsOfServer(ServerInfo serv)
         {
-            foreach (ClientInfo c in serv.clientInfos)
-            {
-                lock (Clients)
-                {
-                    Clients.Remove(c);
-                    ClientsListChanged();
-                }
-                NetCommand clientUnregisteredCmd = new NetCommand()
-                {
-                    Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
-                    Port = 501,
-                    sender = "dispatcher",
-                    cmd = "!clienturegistered",
-                    parameters = c.ClientName
-                };
-                SendCmdToAllServers(clientUnregisteredCmd);
-            }
+            //foreach (ClientInfo c in serv.clientInfos)
+            //{
+            //    lock (Clients)
+            //    {
+            //        Clients.Remove(c);
+            //        ClientsListChanged();
+            //    }
+            //    NetCommand clientUnregisteredCmd = new NetCommand()
+            //    {
+            //        Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+            //        Port = 501,
+            //        sender = "dispatcher",
+            //        cmd = "!clienturegistered",
+            //        parameters = c.ClientName
+            //    };
+            //    SendCmdToAllServers(clientUnregisteredCmd);
+            //}
         }
         void SendServerUnregistered(string ip, int port)
         {
@@ -498,7 +498,7 @@ namespace Dispatcher
                                 netStream.WriteCmd(dispatcherCmd);
                                 break;
                             case "!register":   //зарегистрируй меня
-                                if (AddServer(parameters[0], parameters[1], Convert.ToInt32(parameters[2]),out serverInfo))
+                                if (AddServer(command.sender, command.Ip, command.Port ,out serverInfo))
                                 {
                                     NetCommand registredCmd = new NetCommand()
                                     {
@@ -697,7 +697,7 @@ namespace Dispatcher
             serverInfo.Ip = ip;
             serverInfo.Port = port;
 
-            if (type == "messageserver")
+            if (type == "msgserver")
             {
                 lock (MsgServers)
                 {
@@ -716,7 +716,7 @@ namespace Dispatcher
                 SendCmdToAllServers(serverregisteredCmd);
                 //TODO Запросить список клиентов, хотя не надо, т.к. на сервере еще нет клиентов
             }
-            else
+            else if (type == "fileserver")
             {
                 lock (FileServers)
                 {
@@ -724,6 +724,10 @@ namespace Dispatcher
                 }
                 FileServerListChanged();//обновление списка файлов на сервере
                 AsyncGetFileList(ip, port);//получить список файлов
+            }
+            else
+            {
+                return false;
             }
             return true;
         }

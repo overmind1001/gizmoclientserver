@@ -19,14 +19,21 @@ namespace MsgServer
     public partial class MsgServerForm : Form
     {
         private TcpListener             m_Listener;                 // Tcp слушатель
+
         private int                     m_DispatcherPort;           // Порт диспетчера
         private string                  m_DispatcherIP;             // IP диспетчера
+        private bool                    m_IsIsolated;               // Подключены ли к диспетчеру
+
         private int                     m_ServerPort;               // Порта сервера
         private IPAddress               m_ServerIP;                 // IP сервера
+
         private List<ServerItem>        m_ServersList;              // Список серверов
         private List<ClientItem>        m_ClientsList;              // Список клиентов
-        private Thread                  m_MainListenThread;         // Главный цикл прослушки порта
+            
         private int                     m_MaxClientCount;           // Максимальное количество клиентов
+
+        private Thread                  m_TcpListenThread;          // Поток прослушки TCP
+        private Thread                  m_DispatcherPingThread;     // Поток пинга диспетчера 
 
 
         /// <summary>
@@ -116,15 +123,15 @@ namespace MsgServer
             ClearLog();
 
             m_ServerPort = GetFreeListenerPort(out m_Listener, m_ServerIP);
-            bool isIsolated = !ConnectToDispatcher();
+            m_IsIsolated = !ConnectToDispatcher();
 
             m_Listener.Start();
             Thread.Sleep(100);
 
-            m_MainListenThread = new Thread(TcpListenThreadFunc);
-            m_MainListenThread.Start();
+            m_TcpListenThread = new Thread(TcpListenThreadFunc);
+            m_TcpListenThread.Start();
 
-            lblStatus.Text = isIsolated ? "автономно" : "подключен";
+            lblStatus.Text = m_IsIsolated ? "автономно" : "подключен";
             lblIP.Text = m_ServerIP.ToString();
 
             поднятьToolStripMenuItem.Enabled = false;
@@ -139,9 +146,15 @@ namespace MsgServer
             m_Listener.Stop();
             Thread.Sleep(100);
 
-            if (m_MainListenThread != null)
-                m_MainListenThread.Abort();
+            if (m_TcpListenThread != null)
+                m_TcpListenThread.Abort();
 
+            if (m_DispatcherPingThread != null)
+                m_TcpListenThread.Abort();
+
+
+            m_IsIsolated = DisconnectToDispatcher();
+            
             lstClients.Items.Clear();
             lstServers.Items.Clear();
 
@@ -180,20 +193,26 @@ namespace MsgServer
                     UiWriteLog("Диспетчер не отзывается на команду '!who'");
                     retn = false;
                 }
-                else if (SendCommand("!register", "messageserver " + m_ServerIP.ToString() + " " + m_ServerPort.ToString(), 
-                    m_DispatcherIP, m_DispatcherPort).cmd != "!registered")
+                else if (SendCommand("!register", "Зарегай!", m_DispatcherIP, m_DispatcherPort).cmd != "!registered")
                 {
                     UiWriteLog("Не удалась регистрация на диспетчере");
                     retn = false;
                 }
-                //else if ()
-                //{
+                else
+                {
+                    m_DispatcherPingThread = new Thread(DispatcherPingThreadFunc);
+                    m_DispatcherPingThread.Start();
 
-                //}
+                    string ServerList = 
+                        SendCommand("!getserverlist", "Дай другие сервера!", m_DispatcherIP, m_DispatcherPort).parameters;
+                    ParseServerList(ServerList);
+
+                    retn = true;
+                }
             }
             catch (Exception ex)
             {
-                UiWriteLog("Ошибка в ConnectToDispatcher: " + ex.Message);
+                Debug.Write(" > Ошибка в ConnectToDispatcher: " + ex.Message);
             }
 
             if (!retn)
@@ -213,6 +232,7 @@ namespace MsgServer
         /// <returns>true - удачно</returns>
         private bool DisconnectToDispatcher()
         {
+
             return true;
         }
 
@@ -259,7 +279,7 @@ namespace MsgServer
             }
             catch (Exception ex)
             {
-                UiWriteLog("Ошибка в SendCommandToDispatcher: " + ex.Message);
+                Debug.Write(" > Ошибка в SendCommandToDispatcher: " + ex.Message);
             }
 
             return retn;
@@ -437,7 +457,37 @@ namespace MsgServer
             return true;
         }
 
+        /// <summary>
+        /// Парсит строку с серверами и добавляет их в список
+        /// </summary>
+        /// <param name="serverlist"></param>
+        private void ParseServerList(string serverlist)
+        {
+            if (serverlist == "")
+                return;
 
+            lock(m_ServersList)
+            {
+                string[] servers = serverlist.Split(new char[]{'|'});
+                for(int i = 0; i < servers.Length; i++)
+                {
+                    string[] param = servers[i].Split(new char[] { ' ' });
+                    if (param.Length < 2)
+                        continue;
+
+                    string ip = param[0];
+                    string port = param[1];
+                    ServerItem Item = m_ServersList.Find(
+                        (ServerItem it) => { return (it.GetIP() == ip) && (it.GetPort().ToString() == port); });
+
+                    if (Item == null)
+                    {
+                        m_ServersList.Add(new ServerItem(ip, int.Parse(port)));
+                        UiInsertServerInList(ip, int.Parse(port));
+                    }
+                }
+            }                
+        }
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
         // Для работы с формой (тут реализуется синхронизация потоков при обращении к контролам)
