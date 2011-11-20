@@ -310,6 +310,7 @@
             this.MainMenuStrip = this.menuStripMainMenu;
             this.Name = "ClientForm";
             this.Text = "Клиент";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ClientForm_FormClosing);
             this.tabControl1.ResumeLayout(false);
             this.tabPageChat.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);
