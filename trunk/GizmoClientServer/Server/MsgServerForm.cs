@@ -334,7 +334,7 @@ namespace MsgServer
             }
             Thread thread = new Thread(() =>
             {
-                SendCommand("!clientregister", name, m_DispatcherIP, m_DispatcherPort);
+                SendCommand("!clientregistered", name, m_DispatcherIP, m_DispatcherPort);
             });
             thread.Start();
             UiInsertClientInList(name);
@@ -355,7 +355,7 @@ namespace MsgServer
             }
             Thread thread = new Thread(() =>
             {
-                SendCommand("!clientunregister", name, m_DispatcherIP, m_DispatcherPort);
+                SendCommand("!clientunregistered", name, m_DispatcherIP, m_DispatcherPort);
             });
             thread.Start();
             UiRemoveClientFromList(name);
