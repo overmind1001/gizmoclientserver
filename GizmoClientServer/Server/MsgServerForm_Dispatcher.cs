@@ -72,6 +72,24 @@ namespace MsgServer
         }
 
         /// <summary>
+        /// Удаляет сервер из списка
+        /// </summary>
+        /// <param name="ip">адрес</param>
+        /// <param name="port">порт</param>
+        /// <returns>ответ</returns>
+        private NetCommand AnsDeleteServer(string ip, int port)
+        {
+            NetCommand retn = CreateCommand("!ok", "");
+
+            if (FindServer(ip, port) != null)
+            {
+                DeleteServer(ip, port);
+            }
+
+            return retn;
+        }
+
+        /// <summary>
         /// Обработчик команды диспетчера
         /// </summary>
         /// <param name="Stream">поток</param>
@@ -96,6 +114,32 @@ namespace MsgServer
                             string port = param[1];
                             Stream.WriteCmd(AnsAddServer(ip, int.Parse(port)));
                         }
+                        break;
+
+                    // Сервер разрегистрировался
+                    case "!serverunregistered":
+                        {
+                            string[] param = Cmd.parameters.Split(new char[] { ' ' });
+                            if (param.Length < 2)
+                            {
+                                UiWriteLog("Неверный формат команды");
+                                break;
+                            }
+
+                            string ip = param[0];
+                            string port = param[1];
+                            Stream.WriteCmd(AnsDeleteServer(ip, int.Parse(port)));
+                        }
+                        break;
+                    
+                    // Регистрация и анрегистрация клиентов
+                    case "!clientregistered":
+                    case "!clientunregistered":
+                        NetCommand CloneCmd = Cmd.Clone();
+                        CloneCmd.Ip = m_ServerIP.ToString();
+                        CloneCmd.Port = m_ServerPort;
+                        CloneCmd.sender = "msgserver";
+                        SendCmdToAllClients(CloneCmd);
                         break;
 
                     // Неизвестная команда
