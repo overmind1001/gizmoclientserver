@@ -167,7 +167,8 @@ namespace Client
                             string cl = command.parameters;
                             lock (lbPeople)
                             {
-                                AddManD(cl);
+                                lbPeople.Invoke(AddManD, new object[] { cl });
+                                //AddManD(cl);
                             }
                             break;
                         case "!clientunregistered":
@@ -175,7 +176,8 @@ namespace Client
                             cl = command.parameters;
                             lock (lbPeople)
                             {
-                                RemoveManD(cl);
+                                lbPeople.Invoke(RemoveManD, new object[] { cl });
+                                //RemoveManD(cl);
                             }
                             break;
                         case "!addfile":
@@ -183,7 +185,8 @@ namespace Client
                             string file = command.parameters;
                             lock (lbFilesList)
                             {
-                                AddFileD(file);
+                                lbFilesList.Invoke(AddFileD, new object[] { file });
+                                //AddFileD(file);
                             }
                             break;
                         case "!deletefile":
@@ -191,7 +194,8 @@ namespace Client
                             file = command.parameters;
                             lock (lbFilesList)
                             {
-                                RemoveFileD(file);
+                                lbFilesList.Invoke(RemoveFileD, new object[] { file });
+                                //RemoveFileD(file);
                             }
                             break;
                         default:
