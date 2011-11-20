@@ -489,6 +489,31 @@ namespace MsgServer
             }                
         }
 
+        /// <summary>
+        /// Рассылает сообщение всем серверам из списка
+        /// </summary>
+        /// <param name="Sender">отправитель сообщения</param>
+        /// <param name="Msg">текст сообщения</param>
+        private void SendMsgToAllServers(string Sender, string Msg)
+        {
+            lock (m_ServersList)
+            {
+                for (int i = 0; i < m_ServersList.Count; i++)
+                {
+                    string ServerIP = m_ServersList[i].GetIP();
+                    int ServerPort = m_ServersList[i].GetPort();
+
+                    if ((ServerIP == m_ServerIP.ToString()) && (ServerPort == m_ServerPort))
+                        continue;
+
+                    TcpClient Tcp = new TcpClient(ServerIP, ServerPort);
+                    NetStreamReaderWriter Stream = new NetStreamReaderWriter(Tcp.GetStream());
+
+                    Stream.WriteCmd(CreateCommand("!message", Sender + ": " + Msg));
+                }
+            }
+        }
+
 
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
