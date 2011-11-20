@@ -179,18 +179,23 @@ namespace MsgServer
         private bool ConnectToDispatcher()
         {
             bool retn = false;
-
-            Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            IPEndPoint endpoint = new IPEndPoint(m_ServerIP, 11000);
-            byte[] buf = new byte[1000];
-
-            EndPoint ep = (EndPoint)endpoint;
+           
             try
             {
-                socket.Bind(ep);
-                socket.ReceiveTimeout = 3000;
-                int recv = socket.ReceiveFrom(buf, ref ep);
-                m_DispatcherIP = Encoding.ASCII.GetString(buf, 0, recv);
+                UdpClient udpClient = new UdpClient(11000);
+                using (udpClient)
+                {
+                    IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 11000);
+                    udpClient.Client.ReceiveTimeout = 3000;
+                    byte[] buf = udpClient.Receive(ref RemoteIpEndPoint);
+                    m_DispatcherIP = Encoding.ASCII.GetString(buf);
+                    udpClient.Close();
+                }
+
+                //socket.Bind(ep);
+                //socket.ReceiveTimeout = 3000;
+                //int recv = socket.ReceiveFrom(buf, ref ep);
+                //m_DispatcherIP = Encoding.ASCII.GetString(buf, 0, recv);
 
                 if (SendCommand("!who", "Ты кто?", m_DispatcherIP, m_DispatcherPort).cmd != "!dispatcher")
                 {
@@ -221,6 +226,9 @@ namespace MsgServer
 
             if (!retn)
             {
+                if (m_DispatcherPingThread != null)
+                    m_DispatcherPingThread.Abort();
+
                 UiWriteLog(""); 
                 UiWriteLog("Не удалось подключиться к диспетчеру");
                 UiWriteLog("Сервер работает в автономном режиме");
