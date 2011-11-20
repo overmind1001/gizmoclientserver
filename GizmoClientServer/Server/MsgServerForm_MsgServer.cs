@@ -38,6 +38,24 @@ namespace MsgServer
                         }
                         break;
 
+                    case "!clientregistred":
+                    case "!clientunregistred":
+                        {
+                            Stream.WriteCmd(CreateCommand("!ok", "Вас понял!"));
+                            Cmd.sender = "!msgserver";
+                            Cmd.Ip = m_ServerIP.ToString();
+                            Cmd.Port = m_ServerPort;
+                            SendCmdToAllClients(Cmd);
+                        }
+                        break;
+                    case "!serverregistred":
+                    case "!serverunregistred":
+                        {
+                            Stream.WriteCmd(CreateCommand("!ok", "Вас понял!"));
+                        }
+                        break;
+                        
+
                     // Неизвестная команда
                     default:
                         {

@@ -164,6 +164,7 @@ namespace MsgServer
                     case "!ping":
                         {
                             Stream.WriteCmd(CreateCommand("!pong", "Я тут"));
+                            UpdatePingTime(Cmd.sender);
                         }
                         break;
 
