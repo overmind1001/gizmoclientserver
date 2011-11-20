@@ -38,7 +38,7 @@ namespace MsgServer
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine(" > Server. Ошибка в TcpListenThreadFunc: " + ex.Message);
+                    UiWriteLog("Ошибка в TcpListenThreadFunc: " + ex.Message);
                 }
             }
         }
@@ -78,13 +78,9 @@ namespace MsgServer
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(" > Server. Ошибка в TcpThreadFunc: " + ex.Message);
+                UiWriteLog("Ошибка в TcpThreadFunc: " + ex.Message);
             }
         }
-
-
-
-
     }
 }
 

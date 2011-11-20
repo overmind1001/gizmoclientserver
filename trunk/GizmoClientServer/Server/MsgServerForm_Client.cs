@@ -105,73 +105,80 @@ namespace MsgServer
         /// <param name="Cmd">команда</param>
         private void ClientCommandHandler(NetStreamReaderWriter Stream, NetCommand Cmd)
         {
-            switch (Cmd.cmd)
+            try
             {
-                // Инициализация, или "кому я пишу?"
-                case "!who":
-                    {
-                        Stream.WriteCmd(AnsWho());
-                    }
-                    break;
+                switch (Cmd.cmd)
+                {
+                    // Инициализация, или "кому я пишу?"
+                    case "!who":
+                        {
+                            Stream.WriteCmd(AnsWho());
+                        }
+                        break;
 
-                // Регистрация клиента
-                case "!register":
-                    {
-                        Stream.WriteCmd(AnsRegister(Cmd));
-                    }
-                    break;
+                    // Регистрация клиента
+                    case "!register":
+                        {
+                            Stream.WriteCmd(AnsRegister(Cmd));
+                        }
+                        break;
 
-                // Сообщение всем клиентам
-                case "!message":
-                    {
-                        SendMsgToAllClients(Cmd.sender, Cmd.parameters);
-                        Stream.WriteCmd(CreateCommand("!ok", "Вас понял"));
-                    }
-                    break;
+                    // Сообщение всем клиентам
+                    case "!message":
+                        {
+                            SendMsgToAllClients(Cmd.sender, Cmd.parameters);
+                            Stream.WriteCmd(CreateCommand("!ok", "Вас понял"));
+                        }
+                        break;
 
-                // Запрос списка контактов
-                case "!getclientlist":
-                    {
-                        Stream.WriteCmd(AnsClientList());
-                    }
-                    break;
+                    // Запрос списка контактов
+                    case "!getclientlist":
+                        {
+                            Stream.WriteCmd(AnsClientList());
+                        }
+                        break;
 
-                // Запрос списка файлов
-                case "!getfilelist":
-                    {
-                        Stream.WriteCmd(AnsFileList());
-                    }
-                    break;
+                    // Запрос списка файлов
+                    case "!getfilelist":
+                        {
+                            Stream.WriteCmd(AnsFileList());
+                        }
+                        break;
 
-                // Запрос свободного файлового сервера для закачки
-                case "!getfreefileserver":
-                    {
-                        Stream.WriteCmd(AnsFreeFileServer());
-                    }
-                    break;
+                    // Запрос свободного файлового сервера для закачки
+                    case "!getfreefileserver":
+                        {
+                            Stream.WriteCmd(AnsFreeFileServer());
+                        }
+                        break;
 
-                // Запрос файлового сервера для скачки
-                case "!getfileserver":
-                    {
-                        Stream.WriteCmd(AnsFileServer(Cmd.parameters));
-                    }
-                    break;
+                    // Запрос файлового сервера для скачки
+                    case "!getfileserver":
+                        {
+                            Stream.WriteCmd(AnsFileServer(Cmd.parameters));
+                        }
+                        break;
 
-                // Пинг от клиента
-                case "!ping":
-                    {
-                        Stream.WriteCmd(CreateCommand("!pong", "Я тут"));
-                    }
-                    break;
+                    // Пинг от клиента
+                    case "!ping":
+                        {
+                            Stream.WriteCmd(CreateCommand("!pong", "Я тут"));
+                        }
+                        break;
 
-                // Неизвестная команда
-                default:
-                    {
-                        Stream.WriteCmd(CreateCommand("!unknowncommand",
-                            "К сожалению сервер не знает такой команды"));
-                        UiWriteLog("Такая команда неизвестна серверу!");
-                    }
-                    break;
+                    // Неизвестная команда
+                    default:
+                        {
+                            Stream.WriteCmd(CreateCommand("!unknowncommand",
+                                "К сожалению сервер не знает такой команды"));
+                            UiWriteLog("Такая команда неизвестна серверу!");
+                        }
+                        break;
+                }
+                }
+            catch (Exception ex)
+            {
+                UiWriteLog("Ошибка в ClientCommandHandler: " + ex.Message);
             }
         }
     }

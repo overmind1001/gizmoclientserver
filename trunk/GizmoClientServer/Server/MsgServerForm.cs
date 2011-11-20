@@ -75,6 +75,9 @@ namespace MsgServer
             Random  Rand            = new Random();
 
             Listener = new TcpListener(0);
+
+            UiWriteLog("Инициализация...");
+            UiWriteLog("IP-адрес: " + m_ServerIP.ToString());
             
             while(!HasFreePort)
             {
@@ -88,7 +91,7 @@ namespace MsgServer
 
                     HasFreePort = true;
 
-                    UiWriteLog("Свободный порт найден! Порт: " + RandPort);
+                    UiWriteLog("Порт: " + RandPort);
                     lblPort.Text = RandPort.ToString();
                 }
                 catch (Exception ex)
@@ -96,6 +99,8 @@ namespace MsgServer
                     UiWriteLog("Порт занят: " + RandPort);
                 }
             }
+
+            UiWriteLog("");
 
             return RandPort;
         }
@@ -143,15 +148,21 @@ namespace MsgServer
         /// <returns>true - удачно</returns>
         private bool ConnectToDispatcher()
         {
-
-
-             UiWriteLog("Не удалось подключиться к диспетчеру. " +
-                            "Сервер работает в автономном режиме. " +
-                            "Порт сервера: " + m_ServerPort.ToString());
+            UiWriteLog("Не удалось подключиться к диспетчеру");
+            UiWriteLog("Сервер работает в автономном режиме");
 
             return false;
         }
-    
+
+        /// <summary>
+        /// Отключается от диспетчера
+        /// </summary>
+        /// <returns>true - удачно</returns>
+        private bool DisconnectToDispatcher()
+        {
+            return true;
+        }
+
 
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -173,7 +184,6 @@ namespace MsgServer
                 cmd = cmd,
                 parameters = param
             };
-
             return Cmd;
         }
 
@@ -216,6 +226,7 @@ namespace MsgServer
             {
                 m_ClientsList.Add(new ClientItem(name, ip, port));
             }
+            UiInsertClientInList(name);
             return true;
         }
 
@@ -231,6 +242,7 @@ namespace MsgServer
             {
                 m_ClientsList.Remove(Client);
             }
+            UiRemoveClientFromList(name);
             return true;
         }
 
@@ -289,7 +301,7 @@ namespace MsgServer
                     Stream.WriteCmd(CreateCommand("!message", Sender + ": " + Msg));
                 }
             }
-            
+            UiWriteLog(Sender + ": " + Msg);
         }
 
 
@@ -329,6 +341,7 @@ namespace MsgServer
             {
                 m_ServersList.Add(new ServerItem(ip, port));
             }
+            UiInsertServerInList(ip, port);
             return true;
         }
 
@@ -344,6 +357,7 @@ namespace MsgServer
             {
                 m_ServersList.Remove(Server);
             }
+            UiRemoveServerFromList(ip, port);
             return true;
         }
 
@@ -423,7 +437,6 @@ namespace MsgServer
         {
              lstServers.Items.Add(ip + ":" + port);
         }
-
         private void UiInsertServerInList(string ip, int port)
         {
             lock (lstServers)
@@ -443,7 +456,6 @@ namespace MsgServer
         {
             lstServers.Items.Remove(ip + ":" + port);
         }
-
         private void UiRemoveServerFromList(string ip, int port)
         {
             lock (lstServers)
@@ -452,6 +464,9 @@ namespace MsgServer
             }
         }
 
+        /// <summary>
+        /// Инициализирует все делегаты
+        /// </summary>
         private void InitDelegates()
         {
             WriteLogD               += WriteLog;
