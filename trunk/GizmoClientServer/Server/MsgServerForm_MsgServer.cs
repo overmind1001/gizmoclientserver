@@ -29,6 +29,13 @@ namespace MsgServer
             {
                 switch (Cmd.cmd)
                 {
+                    // Принимает сообщение
+                    case "!message":
+
+                        SendMsgToAllClients("!msgserver", Cmd.parameters);
+                        SendMsgToAllServers("!msgserver", Cmd.parameters);
+
+                        break;
 
                     // Неизвестная команда
                     default:
