@@ -223,7 +223,7 @@ namespace Client
                 {
                     Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                     Port = ListenerPort,
-                    sender = "client",//пока что безымянный
+                    sender = name,//пока что безымянный
                     cmd = "!register",
                     parameters = name
                 };
