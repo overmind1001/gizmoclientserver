@@ -45,7 +45,9 @@ namespace Client
                 try
                 {
                     port = r.Next(100, 65000);
-                    TcpListener tcpListener = new TcpListener(Dns.GetHostAddresses("localhost")[0],port);
+                    TcpListener tcpListener = new TcpListener(Dns.GetHostByName( Dns.GetHostName()).AddressList[0],port );//new TcpListener(Dns.GetHostAddresses("localhost")[0],port);
+                    //tcpListener = new TcpListener(Dns.GetHostEntry(Dns.GetHostName()).AddressList[0], port);
+                    //TcpListener tcpListener = new TcpListener(IPAddress.Parse("90.151.215.19"), port);
                     tcpListener.Start();
                     tcplistener = tcpListener;
                     portHasGot = true;
