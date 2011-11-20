@@ -106,13 +106,13 @@ namespace Client
 
             myIp = (IPAddress)cf.cmbClientIp.SelectedItem;
 
-            this.Text += " " + myIp.ToString()+" " + ListenerPort.ToString();//////////////////////
+            //////////////////////
 
             serverIp = cf.serverIp;
             serverPort = cf.serverPort;
             name = cf.tbName.Text;
 
-            
+            this.Text += name + " " + myIp.ToString() + " " + ListenerPort.ToString();
             //регистрируемся на сервере
             if (!registerMe(cf.tbName.Text))
             {
