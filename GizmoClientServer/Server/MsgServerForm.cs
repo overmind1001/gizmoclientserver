@@ -286,7 +286,7 @@ namespace MsgServer
             }
             catch (Exception ex)
             {
-                Debug.Write(" > Ошибка в SendCommandToDispatcher: " + ex.Message);
+                Debug.Write(" > Ошибка в SendCommand: " + ex.Message);
             }
 
             return retn;
@@ -327,8 +327,16 @@ namespace MsgServer
         {
             lock (m_ClientsList)
             {
-                m_ClientsList.Add(new ClientItem(name, ip, port));
+                ClientItem client = new ClientItem(name, ip, port);
+                TimeSpan fora = new TimeSpan(0, 1, 0);
+                client.SetLastPingTime(DateTime.Now + fora);
+                m_ClientsList.Add(client);
             }
+            Thread thread = new Thread(() =>
+            {
+                SendCommand("!clientregister", name, m_DispatcherIP, m_DispatcherPort);
+            });
+            thread.Start();
             UiInsertClientInList(name);
             return true;
         }
@@ -345,6 +353,11 @@ namespace MsgServer
             {
                 m_ClientsList.Remove(Client);
             }
+            Thread thread = new Thread(() =>
+            {
+                SendCommand("!clientunregister", name, m_DispatcherIP, m_DispatcherPort);
+            });
+            thread.Start();
             UiRemoveClientFromList(name);
             return true;
         }
@@ -396,29 +409,66 @@ namespace MsgServer
             {
                 for (int i = 0; i < m_ClientsList.Count; i++)
                 {
-                    string                  ClientIP    = m_ClientsList[i].GetIP();
-                    int                     ClientPort  = m_ClientsList[i].GetPort();
-                    TcpClient               Tcp         = new TcpClient(ClientIP, ClientPort);
-                    NetStreamReaderWriter   Stream      = new NetStreamReaderWriter(Tcp.GetStream());
-                    
-                    Stream.WriteCmd(CreateCommand("!message", Sender + ": " + Msg));
+                    try
+                    {
+                        string ClientIP = m_ClientsList[i].GetIP();
+                        int ClientPort = m_ClientsList[i].GetPort();
+                        TcpClient Tcp = new TcpClient(ClientIP, ClientPort);
+                        NetStreamReaderWriter Stream = new NetStreamReaderWriter(Tcp.GetStream());
+
+                        Stream.WriteCmd(CreateCommand("!message", Sender + ": " + Msg));
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.Write(" > Ошибка в SendMsgToAllClients: " + ex.Message);
+                    }
                 }
             }
             UiWriteLog(Sender + ": " + Msg);
         }
 
+        /// <summary>
+        /// Рассылает команды всем клиентам из списка
+        /// </summary>
+        /// <param name="Cmd">команда</param>
         private void SendCmdToAllClients(NetCommand Cmd)
         {
             lock (m_ClientsList)
             {
                 for (int i = 0; i < m_ClientsList.Count; i++)
                 {
-                    string ClientIP = m_ClientsList[i].GetIP();
-                    int ClientPort = m_ClientsList[i].GetPort();
-                    TcpClient Tcp = new TcpClient(ClientIP, ClientPort);
-                    NetStreamReaderWriter Stream = new NetStreamReaderWriter(Tcp.GetStream());
+                    try
+                    {
+                        string ClientIP = m_ClientsList[i].GetIP();
+                        int ClientPort = m_ClientsList[i].GetPort();
+                        TcpClient Tcp = new TcpClient(ClientIP, ClientPort);
+                        NetStreamReaderWriter Stream = new NetStreamReaderWriter(Tcp.GetStream());
 
-                    Stream.WriteCmd(Cmd);
+                        Stream.WriteCmd(Cmd);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.Write(" > Ошибка в SendCmdToAllClients: " + ex.Message);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Проверка клиентов на пинг
+        /// </summary>
+        private void AvaibleCheck()
+        {
+            lock (m_ClientsList)
+            {
+                for (int i = 0; i < m_ClientsList.Count; i++)
+                {
+                    if ((DateTime.Now - m_ClientsList[i].GetLastPingTime()).TotalSeconds > 60)
+                    {
+                        SendCommand("!clientunregister", m_ClientsList[i].GetName(), m_DispatcherIP, m_DispatcherPort);
+                        UiRemoveClientFromList(m_ClientsList[i].GetName());
+                        m_ClientsList.Remove(m_ClientsList[i]);
+                    }
                 }
             }
         }
@@ -523,16 +573,23 @@ namespace MsgServer
             {
                 for (int i = 0; i < m_ServersList.Count; i++)
                 {
-                    string ServerIP = m_ServersList[i].GetIP();
-                    int ServerPort = m_ServersList[i].GetPort();
+                    try
+                    {
+                        string ServerIP = m_ServersList[i].GetIP();
+                        int ServerPort = m_ServersList[i].GetPort();
 
-                    if ((ServerIP == m_ServerIP.ToString()) && (ServerPort == m_ServerPort))
-                        continue;
+                        if ((ServerIP == m_ServerIP.ToString()) && (ServerPort == m_ServerPort))
+                            continue;
 
-                    TcpClient Tcp = new TcpClient(ServerIP, ServerPort);
-                    NetStreamReaderWriter Stream = new NetStreamReaderWriter(Tcp.GetStream());
+                        TcpClient Tcp = new TcpClient(ServerIP, ServerPort);
+                        NetStreamReaderWriter Stream = new NetStreamReaderWriter(Tcp.GetStream());
 
-                    Stream.WriteCmd(CreateCommand("!message", Sender + ": " + Msg));
+                        Stream.WriteCmd(CreateCommand("!message", Sender + ": " + Msg));
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.Write(" > Ошибка в SendMsgToAllServers: " + ex.Message);
+                    }
                 }
             }
         }

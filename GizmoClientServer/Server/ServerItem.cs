@@ -28,6 +28,5 @@ namespace MsgServer
         {
             return m_Port;
         }
-
     }
 }
