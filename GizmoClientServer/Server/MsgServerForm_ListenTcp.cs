@@ -29,17 +29,17 @@ namespace MsgServer
         /// </summary>
         private void TcpListenThreadFunc()
         {
-            try
+            while (true)
             {
-                while (true)
+                try
                 {
                     TcpClient Tcp = m_Listener.AcceptTcpClient();
                     ThreadPool.QueueUserWorkItem(TcpThreadFunc, Tcp);
                 }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(" > Server. Ошибка в ClientsListenThreadFunc: " + ex.Message);
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(" > Server. Ошибка в TcpListenThreadFunc: " + ex.Message);
+                }
             }
         }
 
