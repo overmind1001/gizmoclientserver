@@ -155,6 +155,7 @@
             this.Name = "DispatcherForm";
             this.Text = "Диспетчер";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DispatcherForm_FormClosing);
+            this.Load += new System.EventHandler(this.DispatcherForm_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
             this.groupBox3.ResumeLayout(false);

@@ -16,10 +16,12 @@ namespace Client
 {
     public partial class ConnectForm : Form
     {
-        public int MyPort;
+        public int MyPort;              //листенер порт
         public TcpListener tcpListener;
         public TcpClient tcpClient;//будет использоваться в основной форме для регистрации на сервере
 
+        public string serverIp;
+        public int serverPort;
 
         public ConnectForm()
         {
@@ -71,6 +73,10 @@ namespace Client
                 MessageBox.Show("Имя не должно быть пустым!");
                 return;
             }
+            //передаем параметры сервера
+            serverIp = tbIp.Text;
+            serverPort = Convert.ToInt32( numericUpDownPort.Value);
+
             MyPort = getFreeListenerPort(out this.tcpListener);//включение листенера, получение порта
             try
             {
@@ -89,6 +95,8 @@ namespace Client
                 //если через диспетчера
                 if (ansWhoCmd.cmd == "!dispatcher")
                 {
+                    
+
                     NetCommand getserverCmd = new NetCommand()
                     {
                         Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
@@ -114,6 +122,9 @@ namespace Client
                     nsrw = new NetStreamReaderWriter(tcpToServer.GetStream());
                     nsrw.WriteCmd(whoCmd);
                     ansWhoCmd = nsrw.ReadCmd();
+
+                    serverIp = adr[0];
+                    serverPort = Convert.ToInt32( adr[1]);
                 }
                 if (ansWhoCmd.cmd != "!messageserver")
                     throw new Exception("Не найден сервер обмена сообщениями");
