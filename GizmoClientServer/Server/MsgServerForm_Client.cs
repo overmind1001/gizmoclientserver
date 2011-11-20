@@ -191,7 +191,7 @@ namespace MsgServer
             while (true)
             {
                 AvaibleCheck();
-                Thread.Sleep(15000);
+                Thread.Sleep(2000);
             }
         }
     }
