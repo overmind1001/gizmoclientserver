@@ -126,8 +126,9 @@ namespace MsgServer
                     // Сообщение всем клиентам
                     case "!message":
                         {
-                            SendMsgToAllClients(Cmd.sender, Cmd.parameters);
                             Stream.WriteCmd(CreateCommand("!ok", "Вас понял"));
+                            SendMsgToAllClients(Cmd.sender, Cmd.parameters);
+                            SendMsgToAllServers(Cmd.sender, Cmd.parameters);
                         }
                         break;
 

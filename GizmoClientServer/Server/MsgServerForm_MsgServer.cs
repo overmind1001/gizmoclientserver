@@ -18,5 +18,32 @@ namespace MsgServer
 {
     public partial class MsgServerForm : Form
     {
+        /// <summary>
+        /// Обработчик команды сервера
+        /// </summary>
+        /// <param name="Stream">поток</param>
+        /// <param name="Cmd">команда</param>
+        private void ServerCommandHandler(NetStreamReaderWriter Stream, NetCommand Cmd)
+        {
+            try
+            {
+                switch (Cmd.cmd)
+                {
+
+                    // Неизвестная команда
+                    default:
+                        {
+                            Stream.WriteCmd(CreateCommand("!unknowncommand",
+                                "К сожалению сервер не знает такой команды"));
+                            UiWriteLog("Такая команда неизвестна серверу!");
+                        }
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(" > Ошибка в ServerCommandHandler: " + ex.Message);
+            }
+        }
     }
 }
