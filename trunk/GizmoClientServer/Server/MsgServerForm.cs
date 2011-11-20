@@ -50,7 +50,7 @@ namespace MsgServer
         {
             Debug.AutoFlush         = true;//для отладки
 
-            m_ServerIP              = Dns.GetHostEntry(Dns.GetHostName()).AddressList[0];
+            m_ServerIP              = IPAddress.Parse("178.47.93.187");
 
             m_ServersList           = new List<ServerItem>();
             m_ClientsList           = new List<ClientItem>();
@@ -81,7 +81,7 @@ namespace MsgServer
                 try
                 {
                     RandPort = Rand.Next(StartPort, EndPort);
-                    Listener = new TcpListener(IPAddress.Parse("178.47.93.187"), RandPort);
+                    Listener = new TcpListener(IPAddr, RandPort);
 
                     Listener.Start();
                     Listener.Stop();
@@ -109,6 +109,7 @@ namespace MsgServer
             bool isIsolated = !ConnectToDispatcher();
 
             m_Listener.Start();
+            Thread.Sleep(100);
 
             m_MainListenThread = new Thread(TcpListenThreadFunc);
             m_MainListenThread.Start();
@@ -482,6 +483,17 @@ namespace MsgServer
         private void MsgServerForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             StopServer();
+        }
+
+        private void задатьIPToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            IpConfig ipForm = new IpConfig();
+            if (ipForm.ShowDialog() == DialogResult.OK)
+            {
+                StopServer();
+                m_ServerIP = ipForm.Ip;
+                StartServer();
+            } 
         }
     }
 }

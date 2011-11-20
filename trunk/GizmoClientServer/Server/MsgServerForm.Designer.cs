@@ -33,6 +33,8 @@
             this.lblStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
             this.lblPort = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel3 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.lblIP = new System.Windows.Forms.ToolStripStatusLabel();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.серверToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.поднятьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -47,8 +49,8 @@
             this.lstServers = new System.Windows.Forms.ListBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.lstLog = new System.Windows.Forms.ListBox();
-            this.toolStripStatusLabel3 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.lblIP = new System.Windows.Forms.ToolStripStatusLabel();
+            this.настройкаToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.задатьIPToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
@@ -102,10 +104,23 @@
             this.lblPort.Size = new System.Drawing.Size(12, 17);
             this.lblPort.Text = "-";
             // 
+            // toolStripStatusLabel3
+            // 
+            this.toolStripStatusLabel3.Name = "toolStripStatusLabel3";
+            this.toolStripStatusLabel3.Size = new System.Drawing.Size(43, 17);
+            this.toolStripStatusLabel3.Text = "Адрес:";
+            // 
+            // lblIP
+            // 
+            this.lblIP.Name = "lblIP";
+            this.lblIP.Size = new System.Drawing.Size(12, 17);
+            this.lblIP.Text = "-";
+            // 
             // menuStrip1
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.серверToolStripMenuItem});
+            this.серверToolStripMenuItem,
+            this.настройкаToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(555, 24);
@@ -250,17 +265,20 @@
             this.lstLog.Size = new System.Drawing.Size(541, 317);
             this.lstLog.TabIndex = 0;
             // 
-            // toolStripStatusLabel3
+            // настройкаToolStripMenuItem
             // 
-            this.toolStripStatusLabel3.Name = "toolStripStatusLabel3";
-            this.toolStripStatusLabel3.Size = new System.Drawing.Size(43, 17);
-            this.toolStripStatusLabel3.Text = "Адрес:";
+            this.настройкаToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.задатьIPToolStripMenuItem});
+            this.настройкаToolStripMenuItem.Name = "настройкаToolStripMenuItem";
+            this.настройкаToolStripMenuItem.Size = new System.Drawing.Size(78, 20);
+            this.настройкаToolStripMenuItem.Text = "Настройка";
             // 
-            // lblIP
+            // задатьIPToolStripMenuItem
             // 
-            this.lblIP.Name = "lblIP";
-            this.lblIP.Size = new System.Drawing.Size(12, 17);
-            this.lblIP.Text = "-";
+            this.задатьIPToolStripMenuItem.Name = "задатьIPToolStripMenuItem";
+            this.задатьIPToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.задатьIPToolStripMenuItem.Text = "Задать IP";
+            this.задатьIPToolStripMenuItem.Click += new System.EventHandler(this.задатьIPToolStripMenuItem_Click);
             // 
             // MsgServerForm
             // 
@@ -318,6 +336,8 @@
         private System.Windows.Forms.ToolStripStatusLabel lblPort;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel3;
         private System.Windows.Forms.ToolStripStatusLabel lblIP;
+        private System.Windows.Forms.ToolStripMenuItem настройкаToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem задатьIPToolStripMenuItem;
 
     }
 }
