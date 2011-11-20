@@ -37,6 +37,8 @@ namespace FileServer
         public FileServerForm()
         {
             InitializeComponent();
+
+            //забил пока
             InitDelegates();
             m_menuStop.Enabled = false;
             m_menuRun_Click(null, null);
@@ -50,14 +52,12 @@ namespace FileServer
             removeFileD += RemoveFile;
         }
 
-        //Поднять сервер
         protected bool RunServer()
         {
 
             return false;
         }
 
-        //Уронить сервер
         protected bool StopServer()
         {
             return false;
@@ -65,7 +65,7 @@ namespace FileServer
 
 #endregion
 
-#region Интерфейсные штуки
+#region Интерфейсные методы
 
         private void m_menuRun_Click(object sender, EventArgs e)
         {
