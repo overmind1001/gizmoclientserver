@@ -63,6 +63,7 @@ namespace MsgServer
                 // Если отправитель - другой сервер сообщений
                 if (Cmd.sender == "msgserver")
                 {
+                    ServerCommandHandler(Stream, Cmd);
                 }
 
                 // Если отправитель - диспетчер
