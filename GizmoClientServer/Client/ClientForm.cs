@@ -32,6 +32,9 @@ namespace Client
         public ClearHandler ClearPeopleD;
         public ClearHandler ClearFilesD;
 
+        public delegate void SimpleHandler();
+        public SimpleHandler UpdateConnectedD;
+
         //адрес сервера
         string serverIp;    
         int serverPort;
@@ -59,6 +62,9 @@ namespace Client
             RemoveFileD += RemoveFile;
             ClearPeopleD += ClearPeople;
             ClearFilesD += ClearFiles;
+            UpdateConnectedD += UpdateConnected;
+
+            UpdateConnectedD();
         }
 
 #region Вывод информации на GUI
@@ -92,6 +98,13 @@ namespace Client
         void ClearFiles()
         {
             lbFilesList.Items.Clear();
+        }
+        void UpdateConnected()
+        {
+            tbMessage.Enabled = connected;
+            btnSend.Enabled = connected;
+            if (!connected)
+                ClearPeople();
         }
 #endregion
 
@@ -138,6 +151,7 @@ namespace Client
             AsyncGetContactListFromServer();
             //загружаем список файлов
             //AsyncGetFileListFromServer();
+            UpdateConnectedD();
         }
 
         /// <summary>
@@ -306,6 +320,10 @@ namespace Client
                     {
                         MessageBox.Show("Client. Сервер не отвечает на пинг");
                         connected = false;
+                        lock(lbPeople)
+                        {
+                            lbPeople.Invoke(UpdateConnectedD);
+                        }
                     }
                 });
             t.Start();
