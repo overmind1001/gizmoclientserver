@@ -59,7 +59,7 @@ namespace MsgServer
         {
             Debug.AutoFlush         = true;//для отладки
 
-            m_ServerIP              = IPAddress.Parse("178.47.93.187");
+            m_ServerIP              = IPAddress.Parse("127.0.0.1");
 
             m_ServersList           = new List<ServerItem>();
             m_ClientsList           = new List<ClientItem>();
