@@ -117,7 +117,7 @@ namespace Dispatcher
                     unregisteredServers.Clear();
                     foreach (ServerInfo s in MsgServers)
                     {
-                        if ( ( DateTime.Now-s.lastPingTime).TotalSeconds>30)//сервер не пингует уже 30 сек
+                        if ( ( DateTime.Now-s.lastPingTime).TotalSeconds>60)//сервер не пингует уже 30 сек
                         {
                             unregisteredServers.Add(s);
                         }
@@ -167,7 +167,7 @@ namespace Dispatcher
                                 filesToDelete.Add(f);
                                 NetCommand deletefileCmd = new NetCommand() 
                                 {
-                                    Ip = Dns.GetHostAddresses( Dns.GetHostName())[0].ToString(),
+                                    Ip = DispatcherIP.ToString(),//Dns.GetHostAddresses( Dns.GetHostName())[0].ToString(),
                                     Port = 501,
                                     sender = "dispatcher",
                                     cmd ="!deletefile",
@@ -230,7 +230,7 @@ namespace Dispatcher
         {
             NetCommand serverUnregisteredCmd = new NetCommand()
             {
-                Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                Ip = DispatcherIP.ToString(),//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                 Port = 501,
                 sender = "dispatcher",
                 cmd = "!serverunregistered",
@@ -287,7 +287,7 @@ namespace Dispatcher
                             case "!who":
                                 NetCommand dispatcherCmd = new NetCommand()
                                 {
-                                    Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                                    Ip = DispatcherIP.ToString(),//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                                     Port = 500,
                                     sender = "dispatcher",
                                     cmd = "!dispatcher"
@@ -305,7 +305,7 @@ namespace Dispatcher
                                         msgServ = MsgServers[i];
                                         NetCommand msgServerCmd = new NetCommand()
                                         {
-                                            Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                                            Ip = DispatcherIP.ToString(),//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                                             Port = 500,
                                             sender = "dispatcher",
                                             cmd = "!msgserver",
@@ -317,7 +317,7 @@ namespace Dispatcher
                                     {
                                         NetCommand hasNotServerCmd = new NetCommand()
                                         {
-                                            Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                                            Ip = DispatcherIP.ToString(),//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                                             Port = 500,
                                             sender = "dispatcher",
                                             cmd = "!hasnotserver",
@@ -490,7 +490,7 @@ namespace Dispatcher
                             case "!who":        //к кому я подключился?
                                 NetCommand dispatcherCmd = new NetCommand()
                                 {
-                                    Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                                    Ip = DispatcherIP.ToString(),//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                                     Port = 501,
                                     sender = "dispatcher",
                                     cmd = "!dispatcher"
@@ -502,7 +502,7 @@ namespace Dispatcher
                                 {
                                     NetCommand registredCmd = new NetCommand()
                                     {
-                                        Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                                        Ip = DispatcherIP.ToString(),//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                                         Port = 501,
                                         sender = "dispatcher",
                                         cmd = "!registered"
@@ -513,7 +513,7 @@ namespace Dispatcher
                                 {
                                     NetCommand notRegistredCmd = new NetCommand()
                                     {
-                                        Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                                        Ip = DispatcherIP.ToString(),//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                                         Port = 501,
                                         sender = "dispatcher",
                                         cmd = "!notregistered",
@@ -540,7 +540,7 @@ namespace Dispatcher
                                 UnregisterClient(command.parameters);
                                 {
                                     NetCommand c = command.Clone();//адрес отправителя уже другой
-                                    c.Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString();
+                                    c.Ip = DispatcherIP.ToString();//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString();
                                     c.Port = 501;
                                     SendCmdToAllServers(c);
                                 }
@@ -560,7 +560,7 @@ namespace Dispatcher
                                     }
                                     NetCommand freeFileServerCmd = new NetCommand()
                                     {
-                                        Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                                        Ip = DispatcherIP.ToString(),//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                                         Port = 501,
                                         sender = "dispatcher",
                                         cmd = "!freefileserver",
@@ -572,7 +572,7 @@ namespace Dispatcher
                                 {
                                     NetCommand errorCmd = new NetCommand()
                                     {
-                                        Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                                        Ip = DispatcherIP.ToString(),//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                                         Port = 501,
                                         sender = "dispatcher",
                                         cmd = "!error",
@@ -617,7 +617,7 @@ namespace Dispatcher
                                 {
                                     NetCommand pongCmd = new NetCommand()
                                     {
-                                        Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                                        Ip = DispatcherIP.ToString(),//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                                         Port = 501,
                                         sender = "dispatcher",
                                         cmd = "!pong",
@@ -665,7 +665,8 @@ namespace Dispatcher
         {
             NetCommand getFileListCmd = new NetCommand()
             {
-                Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                Ip = DispatcherIP.ToString(),
+                //Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                 Port = 501,
                 sender = "dispatcher",
                 cmd = "!getfilelist",
@@ -696,6 +697,8 @@ namespace Dispatcher
             serv = serverInfo;
             serverInfo.Ip = ip;
             serverInfo.Port = port;
+            TimeSpan fora = new TimeSpan(0, 1, 0);
+            serverInfo.lastPingTime = DateTime.Now + fora;
 
             if (type == "msgserver")
             {
@@ -707,7 +710,7 @@ namespace Dispatcher
 
                 NetCommand serverregisteredCmd = new NetCommand()
                 {
-                    Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                    Ip = DispatcherIP.ToString(),//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                     Port = 501,
                     sender = "dispatcher",
                     cmd = "!serverregistered",
@@ -746,7 +749,7 @@ namespace Dispatcher
             }
             NetCommand serverListCmd = new NetCommand()
             {
-                Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                Ip = DispatcherIP.ToString(),//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                 Port = 501,
                 sender = "dispatcher",
                 cmd = "!serverlist",
@@ -769,7 +772,8 @@ namespace Dispatcher
             }
             NetCommand clientListCmd = new NetCommand()
             {
-                Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                Ip = DispatcherIP.ToString(),
+                //Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                 Port = 501,
                 sender = "dispatcher",
                 cmd = "!clientlist",
@@ -789,7 +793,7 @@ namespace Dispatcher
             }
             NetCommand fileListCmd = new NetCommand()
             {
-                Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                Ip = DispatcherIP.ToString(),//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                 Port = 501,
                 sender = "dispatcher",
                 cmd = "!filelist",
