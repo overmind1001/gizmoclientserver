@@ -10,12 +10,12 @@ using System.Net.Sockets;
 using System.IO;
 using Dispatcher;
 using System.Net;
+using System.Diagnostics;
 
 namespace Client
 {
     public partial class ConnectForm : Form
     {
-        //public TcpClient tcpClient;//подключение к серверу
         public int MyPort;
         public TcpListener tcpListener;
         public TcpClient tcpClient;//будет использоваться в основной форме для регистрации на сервере
@@ -40,12 +40,10 @@ namespace Client
             Random r = new Random();
             int port=-1;
             tcplistener = null;
-
             while(!portHasGot)
             {
                 try
                 {
-
                     port = r.Next(100, 65000);
                     TcpListener tcpListener = new TcpListener(port);
                     tcpListener.Start();
@@ -62,7 +60,6 @@ namespace Client
         }
         private void butConnect_Click(object sender, EventArgs e)
         {
-            
             if(!IpIsValid())
             {
                 return;
@@ -72,18 +69,11 @@ namespace Client
                 MessageBox.Show("Имя не должно быть пустым!");
                 return;
             }
-            
             MyPort = getFreeListenerPort(out this.tcpListener);//включение листенера, получение порта
             try
             {
                 TcpClient tcpClient=new TcpClient(tbIp.Text,Convert.ToInt32( numericUpDownPort.Value));
-
                 NetStreamReaderWriter nsrw = new NetStreamReaderWriter(tcpClient.GetStream());
-                //NetworkStream nstr=tcpClient.GetStream();
-                //StreamWriter sw = new StreamWriter(nstr);
-                //StreamReader sr = new StreamReader(nstr);
-                //sw.AutoFlush = true;
-
                 NetCommand whoCmd = new NetCommand()
                 {
                     Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
@@ -93,12 +83,7 @@ namespace Client
                     parameters = ""
                 };
                 nsrw.WriteCmd(whoCmd);
-                //sw.WriteLine("!who");
-
-
                 NetCommand ansWhoCmd = nsrw.ReadCmd();
-
-                //String who = sr.ReadLine();
                 //если через диспетчера
                 if (ansWhoCmd.cmd == "!dispatcher")
                 {
@@ -111,12 +96,11 @@ namespace Client
                         parameters = ""
                     };
                     nsrw.WriteCmd(getserverCmd);
-                    //sw.WriteLine("!getserver");
-                    NetCommand ansServerAddress = nsrw.ReadCmd();
-                    //String servIPport = sr.ReadLine()
+                    NetCommand ansServerAddress = nsrw.ReadCmd();//ждем ответ
                     if (ansServerAddress.cmd == "!hasnotserver")
                     {
                         MessageBox.Show("А нету серверов!");
+                        return;
                     }
                     if (ansServerAddress.cmd != "!msgserver")
                     {
@@ -126,13 +110,8 @@ namespace Client
                     String[] adr = ansServerAddress.parameters.Split(new char[]{' '});
                     tcpClient.Connect(adr[0], Convert.ToInt32( adr[1])); //коннектимся к серверу
                     nsrw = new NetStreamReaderWriter(tcpClient.GetStream());
-                    //nstr = tcpClient.GetStream();
-                    //sw = new StreamWriter(nstr);
                     nsrw.WriteCmd(whoCmd);
-                    //sw.WriteLine("!Who");
-                    //sr = new StreamReader(nstr);
                     ansWhoCmd = nsrw.ReadCmd();
-                    //who = sr.ReadLine();
                 }
                 if (ansWhoCmd.cmd != "!messageserver")
                     throw new Exception("Не найден сервер обмена сообщениями");
@@ -144,25 +123,29 @@ namespace Client
             catch(Exception ex)
             {
                 MessageBox.Show(ex.Message);
-                
-                //this.DialogResult=DialogResult.Cancel;
             }
         }
 
         private void btnRecieveBroadcastAddr_Click(object sender, EventArgs e)
         {
-            // Sends a message to a different host using optional hostname and port parameters.
-            UdpClient udpClient = new UdpClient(11000);
-
-            //IPEndPoint object will allow us to read datagrams sent from any source.
-            IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 11000);
-
-            // Blocks until a message returns on this socket from a remote host.
-            Byte[] receiveBytes = udpClient.Receive(ref RemoteIpEndPoint);
-            string returnData = Encoding.ASCII.GetString(receiveBytes);
-
-            tbIp.Text = returnData;
-            udpClient.Close();
+            try
+            {
+                UdpClient udpClient = new UdpClient(11000);
+                using (udpClient)
+                {
+                    IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 11000);
+                    udpClient.Client.ReceiveTimeout = 3000;
+                    Byte[] receiveBytes = udpClient.Receive(ref RemoteIpEndPoint);
+                    string returnData = Encoding.ASCII.GetString(receiveBytes);
+                    tbIp.Text = returnData;
+                    udpClient.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ну удалось автоматически обнаружить адрес!");
+                Debug.WriteLine("Client. ConnectForm "+ex.Message);
+            }
         }
     }
 }
