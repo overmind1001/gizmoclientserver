@@ -23,7 +23,7 @@ namespace Client
         public WriteMesssageHandler WriteMessageD;
 
         public delegate void AddRemoveStringHandler(string str);
-        public AddRemoveStringHandler AddManD;
+        public event AddRemoveStringHandler AddManD;
         public AddRemoveStringHandler RemoveManD;
         public AddRemoveStringHandler AddFileD;
         public AddRemoveStringHandler RemoveFileD;
@@ -59,7 +59,10 @@ namespace Client
         //из другого потока напрямую не вызывать
         void WriteMessage(string message)
         {
-            this.tbChat.Text += message + Environment.NewLine;
+            lock (tbChat)
+            {
+                this.tbChat.Text += message + Environment.NewLine;
+            }
         }
         void AddMan(string man)
         {
@@ -97,6 +100,9 @@ namespace Client
             }
             this.TcpListener= cf.tcpListener;
             ListenerPort = cf.MyPort;
+
+            this.Text += " " + ListenerPort.ToString();//////////////////////
+
             serverIp = cf.tbIp.Text;
             serverPort = Convert.ToInt32( cf.numericUpDownPort.Value);
             name = cf.tbName.Text;
@@ -104,21 +110,17 @@ namespace Client
             //запускаем поток для TcpListenera
             Thread tcpListenerThread = new Thread(TcpListenerThread);
             tcpListenerThread.Start();
-
-            TcpClient tcpClient = cf.tcpClient;
-            NetStreamReaderWriter nsrw = new NetStreamReaderWriter(tcpClient.GetStream());
-
             //регистрируемся на сервере
             if (!registerMe( cf.tbName.Text))
                 return;
             //запускаем поток пинга
-            //AsyncStartPing();
+            AsyncStartPing();
 
             //эти операции асинхронные
             //загружаем список контактов
-            AsyncGetContactListFromServer();
+           // AsyncGetContactListFromServer();
             //загружаем список файлов
-            AsyncGetFileListFromServer();
+          //  AsyncGetFileListFromServer();
         }
 
         /// <summary>
@@ -126,10 +128,17 @@ namespace Client
         /// </summary>
         void TcpListenerThread()
         {
-            while (true)
+            try
             {
-                TcpClient tcpClient = TcpListener.AcceptTcpClient();
-                ThreadPool.QueueUserWorkItem(Listen,tcpClient);
+                while (true)
+                {
+                    TcpClient tcpClient = TcpListener.AcceptTcpClient();
+                    ThreadPool.QueueUserWorkItem(Listen, tcpClient);
+                }
+            }
+            catch(Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
             }
         }
 
@@ -147,9 +156,10 @@ namespace Client
                         case "!message"://прием сообщения                            
                             string message = command.parameters;
                             nsrw.WriteCmd(CreateStandardAnswer());//ответ
-                            lock (tbChat)
+                            
                             {
-                                WriteMessageD(message);//обновление уи
+                                tbChat.Invoke(WriteMessageD,new object[]{ message});
+                                //WriteMessage(message);//обновление уи
                             }
                             break;
                         case "!clientregistered":
@@ -221,7 +231,7 @@ namespace Client
             {
                 NetCommand registerCmd = new NetCommand()
                 {
-                    Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                    Ip = Dns.GetHostEntry("localhost").AddressList[0].ToString(),//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                     Port = ListenerPort,
                     sender = name,//пока что безымянный
                     cmd = "!register",
@@ -251,7 +261,7 @@ namespace Client
                         {
                             TcpClient tcpClient = new TcpClient(serverIp, serverPort);
                             NetStreamReaderWriter nsrw = new NetStreamReaderWriter(tcpClient.GetStream());
-                            nsrw.ReadTimeout = 10000;
+                            nsrw.ReadTimeout = 100000;
                             NetCommand pingCmd = new NetCommand()
                             {
                                 Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
