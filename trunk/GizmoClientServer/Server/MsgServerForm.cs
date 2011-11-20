@@ -192,11 +192,6 @@ namespace MsgServer
                     udpClient.Close();
                 }
 
-                //socket.Bind(ep);
-                //socket.ReceiveTimeout = 3000;
-                //int recv = socket.ReceiveFrom(buf, ref ep);
-                //m_DispatcherIP = Encoding.ASCII.GetString(buf, 0, recv);
-
                 if (SendCommand("!who", "Ты кто?", m_DispatcherIP, m_DispatcherPort).cmd != "!dispatcher")
                 {
                     UiWriteLog("Диспетчер не отзывается на команду '!who'");
@@ -410,6 +405,22 @@ namespace MsgServer
                 }
             }
             UiWriteLog(Sender + ": " + Msg);
+        }
+
+        private void SendCmdToAllClients(NetCommand Cmd)
+        {
+            lock (m_ClientsList)
+            {
+                for (int i = 0; i < m_ClientsList.Count; i++)
+                {
+                    string ClientIP = m_ClientsList[i].GetIP();
+                    int ClientPort = m_ClientsList[i].GetPort();
+                    TcpClient Tcp = new TcpClient(ClientIP, ClientPort);
+                    NetStreamReaderWriter Stream = new NetStreamReaderWriter(Tcp.GetStream());
+
+                    Stream.WriteCmd(Cmd);
+                }
+            }
         }
 
 

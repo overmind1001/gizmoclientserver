@@ -220,7 +220,7 @@ namespace Dispatcher
             //        Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
             //        Port = 501,
             //        sender = "dispatcher",
-            //        cmd = "!clienturegistered",
+            //        cmd = "!clientunregistered",
             //        parameters = c.ClientName
             //    };
             //    SendCmdToAllServers(clientUnregisteredCmd);
