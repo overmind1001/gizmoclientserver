@@ -64,6 +64,8 @@ namespace Client
         void WriteMessage(string message)
         {
             this.tbChat.Text += message + Environment.NewLine;
+            tbChat.Select(tbChat.Text.Length, 0);
+            tbChat.ScrollToCaret();
         }
         void AddMan(string man)
         {
@@ -110,12 +112,18 @@ namespace Client
             serverPort = cf.serverPort;
             name = cf.tbName.Text;
 
+            
+            //регистрируемся на сервере
+            if (!registerMe(cf.tbName.Text))
+            {
+                MessageBox.Show("Не удалось зарегаться!");
+                serverIp = "";
+                serverPort = 0;
+                return;
+            }
             //запускаем поток для TcpListenera
             Thread tcpListenerThread = new Thread(TcpListenerThread);
             tcpListenerThread.Start();
-            //регистрируемся на сервере
-            if (!registerMe( cf.tbName.Text))
-                return;
             //запускаем поток пинга
             AsyncStartPing();
 
@@ -271,7 +279,7 @@ namespace Client
                         {
                             TcpClient tcpClient = new TcpClient(serverIp, serverPort);
                             NetStreamReaderWriter nsrw = new NetStreamReaderWriter(tcpClient.GetStream());
-                            nsrw.ReadTimeout = 100000;
+                            nsrw.ReadTimeout = 10000;
                             NetCommand pingCmd = new NetCommand()
                             {
                                 Ip = myIp.ToString(),//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
@@ -285,7 +293,7 @@ namespace Client
                             if (ansPing.cmd != "!pong")
                                 MessageBox.Show("Client. В ответ на пинг пришла хрень");
                             tcpClient.Close();
-                            Thread.Sleep(20000);//задержка 
+                            Thread.Sleep(5000);//задержка 
                         }
                     }
                     catch (Exception ex)

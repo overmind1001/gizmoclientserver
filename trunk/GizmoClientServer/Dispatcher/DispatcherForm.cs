@@ -143,7 +143,7 @@ namespace Dispatcher
                     unregisteredServers.Clear();
                     foreach (ServerInfo s in MsgServers)
                     {
-                        if ( ( DateTime.Now-s.lastPingTime).TotalSeconds>60)//сервер не пингует уже 30 сек
+                        if ( ( DateTime.Now-s.lastPingTime).TotalSeconds>15)//сервер не пингует уже 20 сек
                         {
                             unregisteredServers.Add(s);
                         }
@@ -174,7 +174,7 @@ namespace Dispatcher
                     unregisterFileServer(s.Ip, s.Port);
                 }
                 
-                Thread.Sleep(10000);
+                Thread.Sleep(5000);//интервал проверок
             }
         }
         void unregisterFileServer(string ip, int port)
