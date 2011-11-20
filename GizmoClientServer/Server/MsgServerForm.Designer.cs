@@ -47,6 +47,8 @@
             this.lstServers = new System.Windows.Forms.ListBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.lstLog = new System.Windows.Forms.ListBox();
+            this.toolStripStatusLabel3 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.lblIP = new System.Windows.Forms.ToolStripStatusLabel();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
@@ -67,7 +69,9 @@
             this.toolStripStatusLabel1,
             this.lblStatus,
             this.toolStripStatusLabel2,
-            this.lblPort});
+            this.lblPort,
+            this.toolStripStatusLabel3,
+            this.lblIP});
             this.statusStrip1.Location = new System.Drawing.Point(0, 373);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(555, 22);
@@ -246,6 +250,18 @@
             this.lstLog.Size = new System.Drawing.Size(541, 317);
             this.lstLog.TabIndex = 0;
             // 
+            // toolStripStatusLabel3
+            // 
+            this.toolStripStatusLabel3.Name = "toolStripStatusLabel3";
+            this.toolStripStatusLabel3.Size = new System.Drawing.Size(43, 17);
+            this.toolStripStatusLabel3.Text = "Адрес:";
+            // 
+            // lblIP
+            // 
+            this.lblIP.Name = "lblIP";
+            this.lblIP.Size = new System.Drawing.Size(12, 17);
+            this.lblIP.Text = "-";
+            // 
             // MsgServerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -300,6 +316,8 @@
         private System.Windows.Forms.ListBox lstClients;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel2;
         private System.Windows.Forms.ToolStripStatusLabel lblPort;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel3;
+        private System.Windows.Forms.ToolStripStatusLabel lblIP;
 
     }
 }
