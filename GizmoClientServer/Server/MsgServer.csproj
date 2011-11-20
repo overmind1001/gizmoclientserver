@@ -47,11 +47,23 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClientItem.cs" />
+    <Compile Include="MsgServerForm_Server.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="MsgServerForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="MsgServerForm.Designer.cs">
       <DependentUpon>MsgServerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MsgServerForm_Client.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MsgServerForm_Dispatcher.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MsgServerForm_ListenTcp.cs">
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
