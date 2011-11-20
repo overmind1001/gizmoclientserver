@@ -503,6 +503,20 @@ namespace MsgServer
             }
         }
 
+        /// <summary>
+        /// Обновляет пинг
+        /// </summary>
+        /// <param name="name">имя клиента</param>
+        private void UpdatePingTime(string name)
+        {
+            lock (m_ClientsList)
+            {
+                ClientItem client = m_ClientsList.Find((ClientItem it) => { return it.GetName() == name; });
+                if (client != null)
+                    client.SetLastPingTime(DateTime.Now);
+            }
+        }
+
 
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
