@@ -59,10 +59,7 @@ namespace Client
         //из другого потока напрямую не вызывать
         void WriteMessage(string message)
         {
-            lock (tbChat)
-            {
-                this.tbChat.Text += message + Environment.NewLine;
-            }
+            this.tbChat.Text += message + Environment.NewLine;
         }
         void AddMan(string man)
         {
@@ -158,7 +155,10 @@ namespace Client
                             nsrw.WriteCmd(CreateStandardAnswer());//ответ
                             
                             {
-                                tbChat.Invoke(WriteMessageD,new object[]{ message});
+                                lock (tbChat)
+                                {
+                                    tbChat.Invoke(WriteMessageD, new object[] { message });
+                                }
                                 //WriteMessage(message);//обновление уи
                             }
                             break;
