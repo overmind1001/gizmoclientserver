@@ -239,7 +239,6 @@ namespace MsgServer
         /// <returns>true - удачно</returns>
         private bool DisconnectToDispatcher()
         {
-
             return true;
         }
 
