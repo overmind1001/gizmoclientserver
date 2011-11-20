@@ -112,7 +112,7 @@ namespace Client
             if (!registerMe( cf.tbName.Text))
                 return;
             //запускаем поток пинга
-            AsyncStartPing();
+            //AsyncStartPing();
 
             //эти операции асинхронные
             //загружаем список контактов
@@ -251,7 +251,7 @@ namespace Client
                         {
                             TcpClient tcpClient = new TcpClient(serverIp, serverPort);
                             NetStreamReaderWriter nsrw = new NetStreamReaderWriter(tcpClient.GetStream());
-                            nsrw.ReadTimeout = 5000;
+                            nsrw.ReadTimeout = 10000;
                             NetCommand pingCmd = new NetCommand()
                             {
                                 Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
@@ -265,7 +265,7 @@ namespace Client
                             if (ansPing.cmd != "!pong")
                                 MessageBox.Show("Client. В ответ на пинг пришла хрень");
                             tcpClient.Close();
-                            Thread.Sleep(1000);//задержка 
+                            Thread.Sleep(20000);//задержка 
                         }
                     }
                     catch (Exception ex)
