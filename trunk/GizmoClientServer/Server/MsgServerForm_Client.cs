@@ -182,5 +182,17 @@ namespace MsgServer
                 Debug.Write(" > Ошибка в ClientCommandHandler: " + ex.Message);
             }
         }
+
+        /// <summary>
+        /// Проверка времени последнего пинга клиентов
+        /// </summary>
+        private void ClientsCheckThreadFunc()
+        {
+            while (true)
+            {
+                AvaibleCheck();
+                Thread.Sleep(15000);
+            }
+        }
     }
 }
