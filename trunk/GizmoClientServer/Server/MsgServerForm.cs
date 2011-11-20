@@ -463,7 +463,7 @@ namespace MsgServer
             {
                 for (int i = 0; i < m_ClientsList.Count; i++)
                 {
-                    if ((DateTime.Now - m_ClientsList[i].GetLastPingTime()).TotalSeconds > 60)
+                    if ((DateTime.Now - m_ClientsList[i].GetLastPingTime()).TotalSeconds > 15)
                     {
                         SendCommand("!clientunregister", m_ClientsList[i].GetName(), m_DispatcherIP, m_DispatcherPort);
                         UiRemoveClientFromList(m_ClientsList[i].GetName());
