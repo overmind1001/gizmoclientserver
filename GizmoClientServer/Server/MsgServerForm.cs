@@ -476,7 +476,7 @@ namespace MsgServer
             {
                 for (int i = 0; i < m_ClientsList.Count; i++)
                 {
-                    if ((DateTime.Now - m_ClientsList[i].GetLastPingTime()).TotalSeconds > 15)
+                    if ((DateTime.Now - m_ClientsList[i].GetLastPingTime()).TotalSeconds > 5)
                     {
                         string name = m_ClientsList[i].GetName();
                         UiRemoveClientFromList(m_ClientsList[i].GetName());
