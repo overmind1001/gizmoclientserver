@@ -42,11 +42,13 @@ namespace Client
         string name;        //имя клиента
         IPAddress myIp;
 
+        bool connected;
 
         public ClientForm()
         {
             InitializeComponent();
 
+            connected = false;
             //IPAddress[] addrlist = Dns.GetHostAddresses(Dns.GetHostName());
             //myIp = Dns.GetHostAddresses(Dns.GetHostName())[3];
 
@@ -99,6 +101,7 @@ namespace Client
             DialogResult dr = cf.ShowDialog();
             if (dr != DialogResult.OK)
             {//не подключились
+                connected = false;
                 return;
             }
             this.TcpListener= cf.tcpListener;
@@ -119,8 +122,11 @@ namespace Client
                 MessageBox.Show("Не удалось зарегаться!");
                 serverIp = "";
                 serverPort = 0;
+                connected = false;
                 return;
             }
+
+            connected = true;
             //запускаем поток для TcpListenera
             Thread tcpListenerThread = new Thread(TcpListenerThread);
             tcpListenerThread.Start();
@@ -299,6 +305,7 @@ namespace Client
                     catch (Exception ex)
                     {
                         MessageBox.Show("Client. Сервер не отвечает на пинг");
+                        connected = false;
                     }
                 });
             t.Start();
@@ -521,6 +528,8 @@ namespace Client
         }
         private void btnSend_Click(object sender, EventArgs e)
         {
+            if (!connected)
+                return;
             if (tbMessage.Text.Trim() == string.Empty)
                 return;
             if (name == string.Empty)
@@ -531,6 +540,11 @@ namespace Client
         private void ClientForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             Process.GetCurrentProcess().Kill();
+        }
+
+        private void выходToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
         }
     }
 }
