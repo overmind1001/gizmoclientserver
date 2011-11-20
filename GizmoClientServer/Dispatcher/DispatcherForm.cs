@@ -76,6 +76,8 @@ namespace Dispatcher
         void WriteLog(string str)
         {
             tbLog.Text += str + Environment.NewLine;
+            tbLog.Select(tbLog.Text.Length, 0);
+            tbLog.ScrollToCaret();
         }
         void uiWriteLog(string str)
         {
