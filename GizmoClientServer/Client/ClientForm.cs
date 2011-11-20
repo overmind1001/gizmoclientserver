@@ -235,7 +235,7 @@ namespace Client
             {
                 NetCommand registerCmd = new NetCommand()
                 {
-                    Ip = Dns.GetHostEntry("localhost").AddressList[0].ToString(),//Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
+                    Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
                     Port = ListenerPort,
                     sender = name,//пока что безымянный
                     cmd = "!register",
@@ -475,10 +475,11 @@ namespace Client
         {
             Thread t = new Thread(() =>
             {
-                TcpClient tcp = new TcpClient(serverIp, serverPort);
-                NetStreamReaderWriter nsrw = new NetStreamReaderWriter(tcp.GetStream());
                 try
                 {
+                TcpClient tcp = new TcpClient(serverIp, serverPort);
+                NetStreamReaderWriter nsrw = new NetStreamReaderWriter(tcp.GetStream());
+                
                     sendMessage(nsrw, mes);
                     NetCommand ansMessage = nsrw.ReadCmd();
                     if (ansMessage.cmd != "!ok")
