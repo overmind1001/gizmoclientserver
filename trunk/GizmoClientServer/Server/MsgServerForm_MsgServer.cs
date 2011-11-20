@@ -31,10 +31,11 @@ namespace MsgServer
                 {
                     // Принимает сообщение
                     case "!message":
-
-                        SendMsgToAllClients("!msgserver", Cmd.parameters);
-                        SendMsgToAllServers("!msgserver", Cmd.parameters);
-
+                        {
+                            Stream.WriteCmd(CreateCommand("!ok", ""));
+                            UiWriteLog(Cmd.parameters);
+                            SendMsgToAllClients("!msgserver", Cmd.parameters);
+                        }
                         break;
 
                     // Неизвестная команда

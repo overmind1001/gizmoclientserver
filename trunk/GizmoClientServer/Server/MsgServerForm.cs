@@ -483,7 +483,7 @@ namespace MsgServer
             {
                 for (int i = 0; i < m_ClientsList.Count; i++)
                 {
-                    if ((DateTime.Now - m_ClientsList[i].GetLastPingTime()).TotalSeconds > 5)
+                    if ((DateTime.Now - m_ClientsList[i].GetLastPingTime()).TotalSeconds > 10)
                     {
                         string name = m_ClientsList[i].GetName();
                         UiRemoveClientFromList(m_ClientsList[i].GetName());
@@ -613,8 +613,11 @@ namespace MsgServer
 
                         TcpClient Tcp = new TcpClient(ServerIP, ServerPort);
                         NetStreamReaderWriter Stream = new NetStreamReaderWriter(Tcp.GetStream());
-
-                        Stream.WriteCmd(CreateCommand("!message", Sender + ": " + Msg));
+                        NetCommand Cmd = CreateCommand("!message", Sender + ": " + Msg);
+                        UiWriteLog("Посылаем команду '" + Cmd.cmd + " " + Cmd.parameters + "' на " + ServerIP + ":" + ServerPort.ToString());
+                        Stream.WriteCmd(Cmd);
+                        NetCommand AnsCmd = Stream.ReadCmd();
+                        UiWriteLog("Получили ответ '" + AnsCmd.cmd + " " + AnsCmd.parameters + "' от " + AnsCmd.Ip + ":" + AnsCmd.Port);
                     }
                     catch (Exception ex)
                     {
