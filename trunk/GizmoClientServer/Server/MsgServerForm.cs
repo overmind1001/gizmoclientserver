@@ -20,6 +20,7 @@ namespace MsgServer
     {
         private TcpListener             m_Listener;                 // Tcp слушатель
         private int                     m_DispatcherPort;           // Порт диспетчера
+        private string                  m_DispatcherIP;             // IP диспетчера
         private int                     m_ServerPort;               // Порта сервера
         private IPAddress               m_ServerIP;                 // IP сервера
         private List<ServerItem>        m_ServersList;              // Список серверов
@@ -56,6 +57,8 @@ namespace MsgServer
             m_ClientsList           = new List<ClientItem>();
 
             m_MaxClientCount        = 10;
+
+            m_DispatcherPort        = 501;
 
             ThreadPool.SetMaxThreads(10, 10);
         }
@@ -110,6 +113,8 @@ namespace MsgServer
         /// </summary>
         private void StartServer()
         {
+            ClearLog();
+
             m_ServerPort = GetFreeListenerPort(out m_Listener, m_ServerIP);
             bool isIsolated = !ConnectToDispatcher();
 
@@ -121,6 +126,9 @@ namespace MsgServer
 
             lblStatus.Text = isIsolated ? "автономно" : "подключен";
             lblIP.Text = m_ServerIP.ToString();
+
+            поднятьToolStripMenuItem.Enabled = false;
+            уронитьToolStripMenuItem.Enabled = true;
         }
 
         /// <summary>
@@ -140,6 +148,11 @@ namespace MsgServer
             lblStatus.Text = "отключен";
             lblPort.Text = "-";
             lblIP.Text = "-";
+
+            поднятьToolStripMenuItem.Enabled = true;
+            уронитьToolStripMenuItem.Enabled = false;
+
+            ClearLog();
         }
 
         /// <summary>
@@ -148,10 +161,50 @@ namespace MsgServer
         /// <returns>true - удачно</returns>
         private bool ConnectToDispatcher()
         {
-            UiWriteLog("Не удалось подключиться к диспетчеру");
-            UiWriteLog("Сервер работает в автономном режиме");
+            bool retn = false;
 
-            return false;
+            Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            IPEndPoint endpoint = new IPEndPoint(m_ServerIP, 11000);
+            byte[] buf = new byte[1000];
+
+            EndPoint ep = (EndPoint)endpoint;
+            try
+            {
+                socket.Bind(ep);
+                socket.ReceiveTimeout = 3000;
+                int recv = socket.ReceiveFrom(buf, ref ep);
+                m_DispatcherIP = Encoding.ASCII.GetString(buf, 0, recv);
+
+                if (SendCommand("!who", "Ты кто?", m_DispatcherIP, m_DispatcherPort).cmd != "!dispatcher")
+                {
+                    UiWriteLog("Диспетчер не отзывается на команду '!who'");
+                    retn = false;
+                }
+                else if (SendCommand("!register", "messageserver " + m_ServerIP.ToString() + " " + m_ServerPort.ToString(), 
+                    m_DispatcherIP, m_DispatcherPort).cmd != "!registered")
+                {
+                    UiWriteLog("Не удалась регистрация на диспетчере");
+                    retn = false;
+                }
+                //else if ()
+                //{
+
+                //}
+            }
+            catch (Exception ex)
+            {
+                UiWriteLog("Ошибка в ConnectToDispatcher: " + ex.Message);
+            }
+
+            if (!retn)
+            {
+                UiWriteLog(""); 
+                UiWriteLog("Не удалось подключиться к диспетчеру");
+                UiWriteLog("Сервер работает в автономном режиме");
+                UiWriteLog(""); 
+            }
+
+            return retn;
         }
 
         /// <summary>
@@ -187,7 +240,30 @@ namespace MsgServer
             return Cmd;
         }
 
+        /// <summary>
+        /// Отослать команду
+        /// </summary>
+        /// <param name="cmd">команда</param>
+        /// <param name="param">параметры</param>
+        /// <returns>ответ</returns>
+        private NetCommand SendCommand(string cmd, string param, string ip, int port)
+        {
+            NetCommand retn = null;
 
+            try
+            {
+                TcpClient tcpclient = new TcpClient(ip, port);
+                NetStreamReaderWriter Stream = new NetStreamReaderWriter(tcpclient.GetStream());
+                Stream.WriteCmd(CreateCommand(cmd, param));
+                retn = Stream.ReadCmd();
+            }
+            catch (Exception ex)
+            {
+                UiWriteLog("Ошибка в SendCommandToDispatcher: " + ex.Message);
+            }
+
+            return retn;
+        }
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
         // Для работы со списком клиентов (тут реализуется синхронизация потоков при обращении к списку клиентов)
@@ -375,15 +451,30 @@ namespace MsgServer
         /// <param name="text">текст сообщения</param>
         private void WriteLog(string msg)
         {
-            lstLog.Items.Add(" > " + msg);
+            lock (lstLog)
+            {
+                lstLog.Items.Add(" > " + msg);
+            }
         }
 
         private void UiWriteLog(string msg)
         {
+            lstLog.Invoke(WriteLogD, new object[] { msg });
+        }
+
+        public delegate void ClearLogHandler();
+        public ClearLogHandler ClearLogD;
+
+        private void ClearLog()
+        {
             lock (lstLog)
             {
-                lstLog.Invoke(WriteLogD, new object[] { msg });
+                lstLog.Items.Clear();
             }
+        }
+        private void UiClearLog()
+        {
+            lstLog.Invoke(ClearLogD);
         }
 
         public delegate void InsertClientInListHandler(string name);
@@ -395,15 +486,15 @@ namespace MsgServer
         /// <param name="name">имя клиента</param>
         private void InsertClientInList(string name)
         {
-             lstClients.Items.Add(name);
+            lock (lstClients)
+            {
+                lstClients.Items.Add(name);
+            }
         }
 
         private void UiInsertClientInList(string name)
         {
-            lock (lstClients)
-            {
-                lstClients.Invoke(InsertClientInListD, new object[] { name });
-            }
+            lstClients.Invoke(InsertClientInListD, new object[] { name });
         }
 
         public delegate void RemoveClientFromListHandler(string name);
@@ -415,15 +506,15 @@ namespace MsgServer
         /// <param name="name">имя клиента</param>
         private void RemoveClientFromList(string name)
         {
-            lstClients.Items.Remove(name);
+            lock (lstClients)
+            {
+                lstClients.Items.Remove(name);
+            }
         }
 
         private void UiRemoveClientFromList(string name)
         {
-            lock (lstClients)
-            {
-                lstClients.Invoke(RemoveClientFromListD, new object[] { name });
-            }
+            lstClients.Invoke(RemoveClientFromListD, new object[] { name });
         }
 
         public delegate void InsertServerInListHandler(string ip, int port);
@@ -435,14 +526,14 @@ namespace MsgServer
         /// <param name="name">имя клиента</param>
         private void InsertServerInList(string ip, int port)
         {
-             lstServers.Items.Add(ip + ":" + port);
+            lock (lstServers)
+            {
+                lstServers.Items.Add(ip + ":" + port);
+            }
         }
         private void UiInsertServerInList(string ip, int port)
         {
-            lock (lstServers)
-            {
-                lstServers.Invoke(InsertServerInListD, new object[] { ip, port });
-            }
+            lstServers.Invoke(InsertServerInListD, new object[] { ip, port });
         }
 
         public delegate void RemoveServerFromListHandler(string ip, int port);
@@ -454,14 +545,14 @@ namespace MsgServer
         /// <param name="name">имя клиента</param>
         private void RemoveServerFromList(string ip, int port)
         {
-            lstServers.Items.Remove(ip + ":" + port);
+            lock (lstServers)
+            {
+                lstServers.Items.Remove(ip + ":" + port);
+            }
         }
         private void UiRemoveServerFromList(string ip, int port)
         {
-            lock (lstServers)
-            {
-                lstServers.Invoke(RemoveServerFromListD, new object[] { ip, port });
-            }
+            lstServers.Invoke(RemoveServerFromListD, new object[] { ip, port });
         }
 
         /// <summary>
@@ -470,6 +561,7 @@ namespace MsgServer
         private void InitDelegates()
         {
             WriteLogD               += WriteLog;
+            ClearLogD               += ClearLog;
             InsertClientInListD     += InsertClientInList;
             RemoveClientFromListD   += RemoveClientFromList;
             InsertServerInListD     += InsertServerInList;
@@ -498,6 +590,7 @@ namespace MsgServer
         private void MsgServerForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             StopServer();
+            Process.GetCurrentProcess().Kill();
         }
 
         private void задатьIPToolStripMenuItem_Click(object sender, EventArgs e)
