@@ -85,8 +85,15 @@ namespace MsgServer
                     // Зарегистрировался новый сервер
                     case "!serverregistered":
                         {
-                            string ip = Cmd.parameters.Split(new char[] { ' ' })[0];
-                            string port = Cmd.parameters.Split(new char[] { ' ' })[1];
+                            string[] param = Cmd.parameters.Split(new char[] { ' ' });
+                            if (param.Length < 2)
+                            {
+                                UiWriteLog("Неверный формат команды");
+                                break;
+                            }
+
+                            string ip = param[0];
+                            string port = param[1];
                             Stream.WriteCmd(AnsAddServer(ip, int.Parse(port)));
                         }
                         break;
