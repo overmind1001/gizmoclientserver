@@ -478,9 +478,19 @@ namespace MsgServer
                 {
                     if ((DateTime.Now - m_ClientsList[i].GetLastPingTime()).TotalSeconds > 15)
                     {
-                        SendCommand("!clientunregister", m_ClientsList[i].GetName(), m_DispatcherIP, m_DispatcherPort);
+                        string name = m_ClientsList[i].GetName();
                         UiRemoveClientFromList(m_ClientsList[i].GetName());
                         m_ClientsList.Remove(m_ClientsList[i]);
+                        Thread thread = new Thread(() =>
+                        {
+                            SendCommand("!clientunregistered", name, m_DispatcherIP, m_DispatcherPort);
+                        });
+                        thread.Start();
+                        Thread thread1 = new Thread(() =>
+                        {
+                            SendCmdToAllClients(CreateCommand("!clientunregistered", name));
+                        });
+                        thread1.Start();
                     }
                 }
             }
