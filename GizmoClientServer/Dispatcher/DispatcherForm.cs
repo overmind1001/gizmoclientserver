@@ -22,8 +22,9 @@ namespace Dispatcher
         public MyListChangedHandler FileServerListChanged;
         public MyListChangedHandler ClientsListChanged;
         public MyListChangedHandler FilesListChanged;
-        
-        //Списки
+
+        IPAddress DispatcherIP = Dns.GetHostEntry(Dns.GetHostName()).AddressList[0];
+
         List<ServerInfo> MsgServers;
         List<ServerInfo> FileServers;
         List<ClientInfo> Clients;
@@ -261,7 +262,7 @@ namespace Dispatcher
         //взаимодействие с клиентами
         void clientTcpListenerProc()
         {
-            TcpListener clientTcpListener = new TcpListener(500);
+            TcpListener clientTcpListener = new TcpListener(DispatcherIP, 500);
             clientTcpListener.Start();
             while (Running)
             {
@@ -341,7 +342,7 @@ namespace Dispatcher
         //Взаимодействие с серверами
         void serverTcpListenerProc()
         {
-            TcpListener serverTcpListener = new TcpListener(501);
+            TcpListener serverTcpListener = new TcpListener(DispatcherIP, 501);
             serverTcpListener.Start();
             while (Running)
             {
@@ -502,7 +503,7 @@ namespace Dispatcher
                                     NetCommand registredCmd = new NetCommand()
                                     {
                                         Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString(),
-                                        Port = 502,
+                                        Port = 501,
                                         sender = "dispatcher",
                                         cmd = "!registered"
                                     };
@@ -531,7 +532,7 @@ namespace Dispatcher
                                 if (RegisterClient(command.parameters))
                                 {
                                     NetCommand c = command.Clone();//адрес отправителя уже другой
-                                    c.Ip = Dns.GetHostAddresses( Dns.GetHostName())[0].ToString();
+                                    c.Ip = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString();
                                     SendCmdToAllServers(c);
                                 }
                                 break;
@@ -865,17 +866,20 @@ namespace Dispatcher
         {
             Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             s.EnableBroadcast = true;
+
+            IPAddress DispatcherIP = Dns.GetHostEntry(Dns.GetHostName()).AddressList[0];
+
             //IPAddress broadcast = IPAddress.Parse("192.127.150.255");
-            IPHostEntry host=Dns.GetHostByName(Dns.GetHostName());
-            IPAddress broadcast =  host.AddressList[0];
+            //IPHostEntry host=Dns.GetHostByName(Dns.GetHostName());
+            //IPAddress broadcast =  host.AddressList[0];
 
-            IPAddress tail = IPAddress.Parse("0.0.0.255");
+            //IPAddress tail = IPAddress.Parse("0.0.0.255");
 
-            broadcast.Address = broadcast.Address | tail.Address;
-            broadcast.Address = IPAddress.Loopback.Address;///
-            
-            byte[] sendbuf = Encoding.ASCII.GetBytes(Dns.GetHostName());
-            IPEndPoint ep = new IPEndPoint(broadcast, 11000);
+            //broadcast.Address = broadcast.Address | tail.Address;
+            //broadcast.Address = IPAddress.Loopback.Address;///
+
+            byte[] sendbuf = Encoding.ASCII.GetBytes(DispatcherIP.ToString());
+            IPEndPoint ep = new IPEndPoint(IPAddress.Broadcast, 11000);
             while (Running)
             {
                 s.SendTo(sendbuf, ep);
