@@ -320,7 +320,14 @@ namespace Dispatcher
         void clientTcpListenerProc()
         {
             TcpListener clientTcpListener = new TcpListener(DispatcherIP, 500);
-            clientTcpListener.Start();
+            try
+            {
+                clientTcpListener.Start();
+            }
+            catch(Exception)
+            {
+                return;
+            }
             while (Running)
             {
                 TcpClient client = clientTcpListener.AcceptTcpClient();
@@ -401,7 +408,15 @@ namespace Dispatcher
         void serverTcpListenerProc()
         {
             TcpListener serverTcpListener = new TcpListener(DispatcherIP, 501);
-            serverTcpListener.Start();
+            try
+            {
+                serverTcpListener.Start();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Диспетчер на этой машине уже запущен!!!");
+                Application.Exit();
+            }
             while (Running)
             {
                 TcpClient client = serverTcpListener.AcceptTcpClient();
