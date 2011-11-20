@@ -157,6 +157,13 @@ namespace MsgServer
                     }
                     break;
 
+                // Пинг от клиента
+                case "!ping":
+                    {
+                        Stream.WriteCmd(CreateCommand("!pong", "Я тут"));
+                    }
+                    break;
+
                 // Неизвестная команда
                 default:
                     {
