@@ -109,7 +109,7 @@ namespace Client
             NetStreamReaderWriter nsrw = new NetStreamReaderWriter(tcpClient.GetStream());
 
             //регистрируемся на сервере
-            if (!registerMe(nsrw, cf.tbName.Text))
+            if (!registerMe( cf.tbName.Text))
                 return;
             //запускаем поток пинга
             AsyncStartPing();
@@ -213,7 +213,7 @@ namespace Client
             return CreateStandardCommand("!ok", name, String.Empty);
         }
         //регистрация на сервере (через диспетчер или напрямую)
-        private bool registerMe(NetStreamReaderWriter ns,string name)
+        private bool registerMe(string name)
         {
             TcpClient tcpClient = new TcpClient(serverIp, serverPort);
             NetStreamReaderWriter nsrw = new NetStreamReaderWriter(tcpClient.GetStream());
@@ -229,7 +229,7 @@ namespace Client
                 };
                 nsrw.WriteCmd(registerCmd);
 
-                NetCommand ansRegisterCmd = ns.ReadCmd();
+                NetCommand ansRegisterCmd = nsrw.ReadCmd();
 
                 return (ansRegisterCmd.cmd == "!registred");
             }
