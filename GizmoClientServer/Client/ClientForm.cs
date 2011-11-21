@@ -18,7 +18,8 @@ namespace Client
 {
     public partial class ClientForm : Form
     {
-        //делегаты
+#region Делегаты
+
         public delegate void WriteMesssageHandler(string mes);
         public WriteMesssageHandler WriteMessageD;
 
@@ -35,6 +36,7 @@ namespace Client
         public delegate void SimpleHandler();
         public SimpleHandler UpdateConnectedD;
 
+#endregion
         //адрес сервера
         string serverIp;    
         int serverPort;
